@@ -178,6 +178,43 @@
       transform: translateY(-10px);
       color: rgba(255,80,80,.92);
     }
+    /* === Footer: echtes, stabiles Vertical-Center (kein "Nachrutschen") === */
+.footer{
+  align-items: stretch;          /* schon so, aber sicher */
+}
+
+/* jede Footer-Box bekommt fixe Innenhöhe und center */
+.footer .footCard{
+  height: 100%;
+  min-height: var(--footerH);
+  display: flex;
+  align-items: center;
+}
+
+/* mittlerer Block: immer exakt mittig */
+.footer .footCard.footMid{
+  height: 100%;
+  min-height: var(--footerH);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;       /* vertikal fix */
+  align-items: center;           /* horizontal fix */
+  text-align: center;
+}
+
+/* wichtig: Default-Margins killen */
+.footer .footMid .midTitle,
+.footer .footMid .midRow{
+  margin: 0 !important;
+}
+
+/* line-height stabilisieren (verhindert Sprung) */
+.footer .footMid .midTitle{
+  line-height: 1.05;
+}
+.footer .footMid .midRow{
+  line-height: 1.1;
+}
 
     /* ---------- KPI STRIP ---------- */
     .kpis{
