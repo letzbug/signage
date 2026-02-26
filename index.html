@@ -172,7 +172,7 @@
       letter-spacing: -2px;
       line-height: .9;
       text-shadow: 0 14px 40px rgba(0,0,0,.35);
-      font-variant-numeric: tabular-nums; /* kein Zappeln */
+      font-variant-numeric: tabular-nums;
     }
     .clockSec{
       font-weight: 950;
@@ -180,7 +180,7 @@
       line-height: 1;
       transform: translateY(-10px);
       color: rgba(255,80,80,.92);
-      font-variant-numeric: tabular-nums; /* kein Zappeln */
+      font-variant-numeric: tabular-nums;
       width: 2ch;
       text-align: right;
     }
@@ -278,8 +278,6 @@
       letter-spacing: .8px;
       text-transform: uppercase;
       border-bottom: 1px solid rgba(255,255,255,.10);
-
-      /* sticky header */
       position: sticky;
       top: 0;
       z-index: 5;
@@ -299,7 +297,7 @@
     .c-id{ width: 140px; }
     .c-insc{ width: 320px; }
     .c-lieu{ width: 170px; }
-    .c-salle{ width: 200px; } /* breiter */
+    .c-salle{ width: 200px; }
     .c-statut{ width: 220px; }
 
     td.c-salle, th.c-salle{
@@ -464,8 +462,6 @@
       flex-direction: column;
       text-align: center;
       gap: 10px;
-
-      /* wichtig: gleiche Innenlogik ab erster Millisekunde */
       padding-top: 18px;
       padding-bottom: 18px;
     }
@@ -486,8 +482,6 @@
       letter-spacing: 1.2px;
       font-size: 36px;
       line-height: 1.05;
-
-      /* FIX: reserviert Platz -> kein Nachrutschen */
       min-height: 42px;
       display:flex;
       align-items:center;
@@ -505,8 +499,6 @@
       color: rgba(0,0,0,.72);
       font-size: 20px;
       line-height: 1.1;
-
-      /* FIX: reserviert Platz für 1–2 Zeilen */
       min-height: 52px;
       align-content: center;
     }
@@ -532,33 +524,52 @@
       gap: 10px;
       min-height: var(--footerH);
     }
+
+    /* ✅ HIER: kleiner + passt garantiert */
     .footRight .lbl{
-      font-size: 22px;
+      font-size: 20px;          /* war 22 */
       font-weight: 900;
       color: rgba(255,255,255,.88);
     }
     .nextLine{
       display:flex;
       align-items:center;
-      gap: 16px;
-      flex-wrap:wrap;
+      gap: 14px;                /* war 16 */
+      flex-wrap:nowrap;         /* damit Timer rechts bleibt */
       font-weight: 950;
-      font-size: 26px;
+      font-size: 22px;          /* war 26 */
+      line-height: 1.15;
+      min-width: 0;
+    }
+    #nextLabel{
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: clamp(18px, 1.35vw, 22px); /* dynamisch kleiner bei langen Titeln */
+      line-height: 1.15;
+
+      /* max 2 Zeilen, dann … */
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
     }
     .timer{
       margin-left:auto;
       display:inline-flex;
       align-items:center;
       gap: 10px;
-      padding: 10px 14px;
+      padding: 8px 12px;        /* etwas kompakter */
       border-radius: 14px;
       background: rgba(255,59,107,.18);
       border: 1px solid rgba(255,59,107,.25);
       color: rgba(255,255,255,.96);
       font-weight: 950;
+      font-size: 20px;          /* neu kleiner */
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       box-shadow: 0 14px 40px rgba(0,0,0,.22);
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex: 0 0 auto;
     }
 
     /* Debug aus */
@@ -984,7 +995,6 @@
           const sdt = makeDateTimeOnDay(day0, hhmm);
           const edt = new Date(sdt.getTime() + durMin*60000);
 
-          /* ✅ SALLE: KEIN Fallback auf horairePrevu (das sind Uhrzeiten!) */
           const salle = (
             h.salle || h.salleCode || h.salleNom ||
             c.salle || c.salleCode || c.salleNom ||
@@ -1009,9 +1019,6 @@
       sessionsToday = out.sort((a,b)=>a.start-b.start);
     }
 
-    /* =========================
-       STATUS + COLORS
-    ========================== */
     function occPct(booked, cap){
       if(!(Number.isFinite(booked) && Number.isFinite(cap) && cap>0)) return null;
       return Math.max(0, Math.min(100, (booked/cap)*100));
@@ -1140,9 +1147,6 @@
       timer.textContent = `${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m`;
     }
 
-    /* =========================
-       SIGNAGE AUTO SCROLL
-    ========================== */
     function stopAutoScroll(){
       if(scrollTimer) clearInterval(scrollTimer);
       scrollTimer = null;
@@ -1181,9 +1185,6 @@
       }, SCROLL_TICK_MS);
     }
 
-    /* =========================
-       LOAD
-    ========================== */
     async function loadData(){
       const res = await fetch(DATA_URL + "?v=" + Date.now(), { cache:"no-store" });
       if(!res.ok) throw new Error("HTTP " + res.status);
@@ -1206,9 +1207,6 @@
       clockS.textContent  = n.toLocaleTimeString("fr-FR", { timeZone: TZ, second:"2-digit" });
     }
 
-    /* =========================
-       BOOT
-    ========================== */
     tickClock();
     setInterval(tickClock, 250);
 
