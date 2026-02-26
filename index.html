@@ -937,7 +937,13 @@ thead th{
           const sdt = makeDateTimeOnDay(day0, hhmm);
           const edt = new Date(sdt.getTime() + durMin*60000);
 
-          const salle = (h.salle || h.salleCode || c.salle || c.salleCode || c.salleNom || "—");
+          const salle = (
+  h.salle || h.salleCode || h.salleNom ||
+  c.salle || c.salleCode || c.salleNom ||
+  c.adresseCours?.salle || c.adresseCours?.salleCode || c.adresseCours?.salleNom ||
+  c.horairePrevu ||  /* fallback falls Salle nicht geliefert wird */
+  "—"
+);
 
           out.push({
             title,
