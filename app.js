@@ -1,11 +1,19 @@
-/* UniPop Signage — pixel clean table + auto-scroll + JSON refresh */
-
 const TZ = "Europe/Luxembourg";
 const DATA_URL = "./data/today.json";
-const REFRESH_MS = 60_000;          // reload JSON every 60s
-const SCROLL_SPEED_PX_PER_SEC = 28; // smooth signage scroll
-const SCROLL_PAUSE_MS = 1400;       // pause at top/bottom
-const ROW_MIN_FOR_SCROLL = 7;       // under this, no scroll
+
+const REFRESH_MS = 60_000;
+const SCROLL_SPEED_PX_PER_SEC = 28;
+const SCROLL_PAUSE_MS = 1400;
+const ROW_MIN_FOR_SCROLL = 7;
+
+/* FILTER: nur UniPop Datensätze */
+const UNIPOP_FILTER = [
+  "unipop",
+  "université populaire",
+  "universite populaire",
+  "université populaire luxembourg",
+  "universite populaire luxembourg"
+];
 
 const elDate = document.getElementById("dateText");
 const elSite = document.getElementById("siteText");
@@ -14,7 +22,7 @@ const elSec  = document.getElementById("secText");
 
 const elKpiCourses = document.getElementById("kpiCourses");
 const elKpiPeople  = document.getElementById("kpiPeople");
-const elKpiNow     = document.getElementById("kpiNow");
+const elKpiFull    = document.getElementById("kpiFull");
 const elKpiNext    = document.getElementById("kpiNext");
 
 const elRows = document.getElementById("rows");
@@ -24,158 +32,29 @@ const countdownEl = document.getElementById("countdown");
 let coursesCache = [];
 let scrollState = { running:false, dir:1, raf:0, lastTs:0, pauseUntil:0 };
 
-function nowLux(){
-  // "now" as Date; formatting uses Intl with TZ
-  return new Date();
-}
+function nowLux(){ return new Date(); }
 
 function fmtDateLong(d){
   return new Intl.DateTimeFormat("fr-FR", {
     timeZone: TZ, weekday:"long", day:"2-digit", month:"long", year:"numeric"
   }).format(d);
 }
-
 function fmtTimeHM(d){
   return new Intl.DateTimeFormat("fr-FR", {
     timeZone: TZ, hour:"2-digit", minute:"2-digit", hour12:false
   }).format(d);
 }
-
 function fmtSec(d){
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: TZ, second:"2-digit"
-  }).format(d);
+  return new Intl.DateTimeFormat("fr-FR", { timeZone: TZ, second:"2-digit" }).format(d);
 }
+function capitalize(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
 function parseHHMM(s){
-  // "13:00" -> minutes since 00:00
   const m = /^(\d{1,2}):(\d{2})$/.exec(String(s).trim());
   if(!m) return null;
   const hh = Number(m[1]), mm = Number(m[2]);
   if(Number.isNaN(hh) || Number.isNaN(mm)) return null;
   return hh*60 + mm;
-}
-
-function statusFromTimes(startHM, endHM){
-  const n = nowLux();
-  const cur = parseHHMM(new Intl.DateTimeFormat("fr-FR", { timeZone: TZ, hour:"2-digit", minute:"2-digit", hour12:false }).format(n));
-  const s = parseHHMM(startHM);
-  const e = parseHHMM(endHM);
-  if(s == null || e == null || cur == null) return "À VENIR";
-  if(cur >= s && cur < e) return "EN COURS";
-  if(cur < s) return "À VENIR";
-  return "TERMINÉ";
-}
-
-function dotClassFor(status){
-  const st = String(status || "").toUpperCase();
-  if(st.includes("COURS")) return "green";
-  if(st.includes("COMPLET")) return "red";
-  return "blue";
-}
-
-function safeNum(x, fallback=0){
-  const n = Number(x);
-  return Number.isFinite(n) ? n : fallback;
-}
-
-function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
-
-function normalizeData(json){
-  // Accept both {site, date, courses:[...]} or {site, date, items:[...]}
-  const site = json.site || json.lieu || "—";
-  const date = json.date || null;
-  const list = Array.isArray(json.courses) ? json.courses
-            : Array.isArray(json.items) ? json.items
-            : [];
-
-  const courses = list.map((c) => {
-    const start = c.start || c.heure_debut || c.time_start || "00:00";
-    const end   = c.end   || c.heure_fin   || c.time_end   || "00:00";
-    const title = c.title || c.cours || c.name || "—";
-    const id    = c.id ?? c.course_id ?? "—";
-    const lieu  = c.lieu || c.site || site || "—";
-    const salle = c.salle || c.room || "—";
-    const enrolled = safeNum(c.enrolled ?? c.inscrits ?? c.inscriptions ?? 0);
-    const capacity = safeNum(c.capacity ?? c.max ?? c.places ?? 0);
-    const status = c.status || statusFromTimes(start, end);
-    return { start, end, title, id, lieu, salle, enrolled, capacity, status };
-  });
-
-  return { site, date, courses };
-}
-
-function sortCourses(courses){
-  // EN COURS first, then by start time
-  const rank = (s) => {
-    const st = String(s || "").toUpperCase();
-    if(st.includes("COURS")) return 0;
-    if(st.includes("À VENIR") || st.includes("A VENIR")) return 1;
-    if(st.includes("COMPLET")) return 2;
-    if(st.includes("TERMIN")) return 3;
-    return 9;
-  };
-
-  return [...courses].sort((a,b)=>{
-    const ra = rank(a.status), rb = rank(b.status);
-    if(ra !== rb) return ra - rb;
-    const sa = parseHHMM(a.start) ?? 9999;
-    const sb = parseHHMM(b.start) ?? 9999;
-    return sa - sb;
-  });
-}
-
-function renderTable(courses){
-  elRows.innerHTML = "";
-
-  for(const c of courses){
-    const tr = document.createElement("tr");
-
-    const tdTime = document.createElement("td");
-    tdTime.textContent = `${c.start}–${c.end}`;
-    tr.appendChild(tdTime);
-
-    const tdTitle = document.createElement("td");
-    tdTitle.innerHTML = `<span class="courseTitle">${escapeHtml(c.title)}</span>`;
-    tr.appendChild(tdTitle);
-
-    const tdId = document.createElement("td");
-    tdId.textContent = String(c.id);
-    tr.appendChild(tdId);
-
-    const tdIns = document.createElement("td");
-    const cap = c.capacity > 0 ? c.capacity : Math.max(c.enrolled, 1);
-    const pct = clamp((c.enrolled / cap) * 100, 0, 100);
-
-    tdIns.innerHTML = `
-      <div class="insWrap">
-        <div class="insText">${c.enrolled}/${cap}</div>
-        <div class="bar"><span style="width:${pct}%;"></span></div>
-      </div>
-    `;
-    tr.appendChild(tdIns);
-
-    const tdLieu = document.createElement("td");
-    tdLieu.textContent = String(c.lieu);
-    tr.appendChild(tdLieu);
-
-    const tdSalle = document.createElement("td");
-    tdSalle.textContent = String(c.salle);
-    tr.appendChild(tdSalle);
-
-    const tdStat = document.createElement("td");
-    const dot = dotClassFor(c.status);
-    const label = String(c.status || "").toUpperCase().includes("A VENIR") ? "À VENIR" : c.status;
-    tdStat.innerHTML = `
-      <div class="stat">
-        <span class="dot ${dot}"></span>
-        <span>${escapeHtml(label)}</span>
-      </div>
-    `;
-    tr.appendChild(tdStat);
-
-    elRows.appendChild(tr);
-  }
 }
 
 function escapeHtml(str){
@@ -187,51 +66,161 @@ function escapeHtml(str){
     .replaceAll("'","&#039;");
 }
 
-function computeKPIs(courses){
-  const totalCourses = courses.length;
-  const totalPeople = courses.reduce((sum,c)=> sum + safeNum(c.enrolled,0), 0);
+function safeNum(x, fallback=0){
+  const n = Number(x);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  const nowCount = courses.filter(c => String(c.status||"").toUpperCase().includes("COURS")).length;
+function unipopMatch(text){
+  const t = String(text || "").toLowerCase();
+  return UNIPOP_FILTER.some(k => t.includes(k));
+}
 
-  // Next: earliest upcoming
-  const upcoming = courses
-    .filter(c => String(c.status||"").toUpperCase().includes("VENIR"))
-    .sort((a,b)=> (parseHHMM(a.start) ?? 9999) - (parseHHMM(b.start) ?? 9999));
+/* Flexible JSON normalizer (passt sich deinem Export an) */
+function normalizeItem(raw, defaultSite){
+  // Date
+  const date =
+    raw.date || raw.datum || raw.day || raw.jour || null;
 
-  const next = upcoming[0];
-  const nextText = next ? next.start : "—";
+  // Time range (either "08:30–11:00" or start/end)
+  const start = raw.start || raw.heure_debut || raw.time_start || raw.begin || null;
+  const end   = raw.end   || raw.heure_fin   || raw.time_end   || raw.finish || null;
+  const timeRange = raw.time || raw.zeit || raw.heure || raw.horaire || (start && end ? `${start}–${end}` : "—");
+
+  // Course title + code
+  const title =
+    raw.title || raw.cours || raw.kurs || raw.course || raw.name || "—";
+
+  const code =
+    raw.code || raw.course_code || raw.kurs_code || raw.ref || raw.reference || raw.id_code || raw.shortcode || raw.sigle || raw.abbr || raw.courseId || raw.course_id || raw.id || "—";
+
+  // Place / trainer
+  const place =
+    raw.place || raw.ort || raw.lieu || raw.location || raw.site || raw.organisation || raw.organization || defaultSite || "—";
+
+  const trainer =
+    raw.trainer || raw.formateur || raw.referent || raw.instructor || raw.animateur || raw.coach || "—";
+
+  // Enrollment
+  const enrolled = safeNum(raw.enrolled ?? raw.inscrits ?? raw.inscriptions ?? raw.participants ?? raw.nb_inscrits ?? 0);
+  const capacity = safeNum(raw.capacity ?? raw.max ?? raw.places ?? raw.nb_places ?? raw.capacite ?? 0);
+
+  // Room (optional)
+  const room = raw.salle || raw.room || raw.local || raw.classroom || "";
+
+  return { date, timeRange, title, code, place, trainer, enrolled, capacity, room };
+}
+
+function occPercent(enrolled, capacity){
+  if(!capacity || capacity <= 0) return 0;
+  return Math.round((enrolled / capacity) * 100);
+}
+
+function occDotClass(pct){
+  if(pct >= 95) return "green";
+  if(pct >= 70) return "amber";
+  return "red";
+}
+
+function timeStartFromRange(range){
+  // expects "08:30–11:00" or "08:30-11:00" -> return "08:30"
+  const s = String(range || "");
+  const m = s.match(/(\d{1,2}:\d{2})/);
+  return m ? m[1] : null;
+}
+
+function sortByTime(items){
+  return [...items].sort((a,b)=>{
+    const sa = parseHHMM(timeStartFromRange(a.timeRange) || "99:99") ?? 9999;
+    const sb = parseHHMM(timeStartFromRange(b.timeRange) || "99:99") ?? 9999;
+    return sa - sb;
+  });
+}
+
+function renderTable(items){
+  elRows.innerHTML = "";
+
+  for(const it of items){
+    const pct = occPercent(it.enrolled, it.capacity);
+    const dot = occDotClass(pct);
+    const cap = it.capacity > 0 ? it.capacity : Math.max(it.enrolled, 0);
+
+    const tr = document.createElement("tr");
+
+    const tdDate = document.createElement("td");
+    tdDate.textContent = it.date || "—";
+    tr.appendChild(tdDate);
+
+    const tdTime = document.createElement("td");
+    tdTime.textContent = it.timeRange || "—";
+    tr.appendChild(tdTime);
+
+    const tdCourse = document.createElement("td");
+    tdCourse.innerHTML = `
+      <div class="courseTitle">${escapeHtml(it.title)}</div>
+      <div class="courseMeta">
+        <span class="codePill">${escapeHtml(String(it.code))}</span>
+      </div>
+    `;
+    tr.appendChild(tdCourse);
+
+    const tdPlace = document.createElement("td");
+    tdPlace.textContent = it.place || "—";
+    tr.appendChild(tdPlace);
+
+    const tdTrainer = document.createElement("td");
+    tdTrainer.textContent = it.trainer || "—";
+    tr.appendChild(tdTrainer);
+
+    const tdOcc = document.createElement("td");
+    tdOcc.innerHTML = `
+      <div class="occWrap">
+        <div class="occTop">
+          <span class="occDot ${dot}"></span>
+          <span>${pct}%</span>
+        </div>
+        <div class="occSub">${it.enrolled}/${cap}</div>
+      </div>
+    `;
+    tr.appendChild(tdOcc);
+
+    elRows.appendChild(tr);
+  }
+}
+
+function computeKPIs(items){
+  const totalCourses = items.length;
+  const totalPeople = items.reduce((s,x)=> s + safeNum(x.enrolled,0), 0);
+  const fullCount = items.filter(x => x.capacity > 0 && x.enrolled >= x.capacity).length;
+
+  const next = sortByTime(items)[0];
+  const nextStart = next ? (timeStartFromRange(next.timeRange) || "—") : "—";
 
   elKpiCourses.textContent = String(totalCourses);
   elKpiPeople.textContent  = String(totalPeople);
-  elKpiNow.textContent     = String(nowCount);
-  elKpiNext.textContent    = String(nextText);
+  elKpiFull.textContent    = String(fullCount);
+  elKpiNext.textContent    = String(nextStart);
 
   return next || null;
 }
 
-function updateCountdown(nextCourse){
-  if(!nextCourse){
-    countdownEl.textContent = "—";
-    return;
-  }
+function updateCountdown(nextItem){
+  if(!nextItem){ countdownEl.textContent = "—"; return; }
 
-  const n = nowLux();
-  // Build “today at nextCourse.start” in Lux time by comparing minutes
-  const curHM = parseHHMM(fmtTimeHM(n));
-  const nextHM = parseHHMM(nextCourse.start);
+  const nextStart = timeStartFromRange(nextItem.timeRange);
+  if(!nextStart){ countdownEl.textContent = `${nextItem.timeRange} • ${nextItem.title}`; return; }
 
-  if(curHM == null || nextHM == null){
-    countdownEl.textContent = "—";
-    return;
-  }
+  const cur = parseHHMM(fmtTimeHM(nowLux()));
+  const nxt = parseHHMM(nextStart);
+  if(cur == null || nxt == null){ countdownEl.textContent = `${nextStart} • ${nextItem.title}`; return; }
 
-  let diffMin = nextHM - curHM;
+  let diffMin = nxt - cur;
   if(diffMin < 0) diffMin = 0;
 
-  const hours = Math.floor(diffMin / 60);
-  const mins = diffMin % 60;
+  const h = Math.floor(diffMin/60);
+  const m = diffMin%60;
 
-  countdownEl.textContent = `${String(hours).padStart(2,"0")}h ${String(mins).padStart(2,"0")}m • ${nextCourse.start} • ${nextCourse.title}`;
+  countdownEl.textContent = `${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m • ${nextStart} • ${nextItem.title}`;
 }
 
 function tickClock(){
@@ -240,24 +229,34 @@ function tickClock(){
   elSec.textContent = fmtSec(n);
   elDate.textContent = capitalize(fmtDateLong(n));
 }
-function capitalize(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
 async function loadData(){
-  const bust = `?v=${Date.now()}`;
-  const res = await fetch(DATA_URL + bust, { cache:"no-store" });
+  const res = await fetch(DATA_URL + `?v=${Date.now()}`, { cache:"no-store" });
   if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
   const json = await res.json();
-  const norm = normalizeData(json);
 
-  elSite.textContent = norm.site || "—";
-  const sorted = sortCourses(norm.courses);
-  coursesCache = sorted;
+  const defaultSite = json.site || json.lieu || json.organisation || "UniPop";
+  elSite.textContent = "UniPop";
 
-  renderTable(sorted);
-  const next = computeKPIs(sorted);
+  const list = Array.isArray(json.courses) ? json.courses
+            : Array.isArray(json.items) ? json.items
+            : Array.isArray(json.data) ? json.data
+            : Array.isArray(json) ? json
+            : [];
+
+  let items = list.map(x => normalizeItem(x, defaultSite));
+
+  // UniPop filter: on place / organisation / provider / any relevant field
+  items = items.filter(it => unipopMatch(it.place) || unipopMatch(json.site) || unipopMatch(json.organisation));
+
+  items = sortByTime(items);
+  coursesCache = items;
+
+  renderTable(items);
+  const next = computeKPIs(items);
   updateCountdown(next);
 
-  setupAutoScroll(sorted.length);
+  setupAutoScroll(items.length);
 }
 
 function stopAutoScroll(){
@@ -272,7 +271,6 @@ function stopAutoScroll(){
 function setupAutoScroll(rowCount){
   stopAutoScroll();
 
-  // Only scroll if content overflows + enough rows
   const canScroll = tbodyScroll.scrollHeight > tbodyScroll.clientHeight + 4;
   if(!canScroll || rowCount < ROW_MIN_FOR_SCROLL) return;
 
@@ -294,9 +292,8 @@ function setupAutoScroll(rowCount){
 
     const max = tbodyScroll.scrollHeight - tbodyScroll.clientHeight;
     const delta = SCROLL_SPEED_PX_PER_SEC * dt * scrollState.dir;
-    tbodyScroll.scrollTop = clamp(tbodyScroll.scrollTop + delta, 0, max);
+    tbodyScroll.scrollTop = Math.max(0, Math.min(max, tbodyScroll.scrollTop + delta));
 
-    // pause at ends
     if(tbodyScroll.scrollTop <= 0 && scrollState.dir < 0){
       scrollState.dir = 1;
       scrollState.pauseUntil = ts + SCROLL_PAUSE_MS;
@@ -311,39 +308,15 @@ function setupAutoScroll(rowCount){
   scrollState.raf = requestAnimationFrame(step);
 }
 
-function scheduleRefresh(){
-  setInterval(async ()=>{
-    try { await loadData(); }
-    catch(e){ /* silently keep screen */ }
-  }, REFRESH_MS);
-}
-
-function scheduleMidnightReload(){
-  // Reload page shortly after midnight Luxembourg time
-  setInterval(()=>{
-    const n = nowLux();
-    const hm = fmtTimeHM(n);
-    if(hm === "00:01"){
-      location.reload();
-    }
-  }, 30_000);
-}
-
 /* Boot */
 tickClock();
 setInterval(tickClock, 250);
 
-loadData().catch(()=>{ /* show empty board if data missing */ });
-scheduleRefresh();
-scheduleMidnightReload();
+loadData().catch(()=>{});
+setInterval(()=> loadData().catch(()=>{}), REFRESH_MS);
 
-// Countdown tick every minute (cheap)
+// Countdown tick every minute
 setInterval(()=>{
-  // recompute next based on cached + current time
-  const next = coursesCache
-    .map(c => ({...c, status: c.status || statusFromTimes(c.start,c.end)}))
-    .filter(c => String(statusFromTimes(c.start,c.end)).toUpperCase().includes("VENIR"))
-    .sort((a,b)=> (parseHHMM(a.start) ?? 9999) - (parseHHMM(b.start) ?? 9999))[0] || null;
-
+  const next = sortByTime(coursesCache)[0] || null;
   updateCountdown(next);
 }, 60_000);
