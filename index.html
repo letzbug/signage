@@ -1,386 +1,613 @@
 <!doctype html>
-<html lang="fr">
+<html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>UniPop — Programme du jour</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UniPop — Signage (Heute)</title>
   <style>
     :root{
-      --bg1:#3b155f; --bg2:#1f2a6b; --bg3:#0d7a6b;
-      --card:#ffffff;
-      --line: rgba(15, 23, 42, 0.08);
-      --text:#0f172a;
-      --red:#ef4444; --amber:#f59e0b; --green:#22c55e;
-      --radius: 18px;
-      --shadow: 0 18px 55px rgba(0,0,0,.30);
-      --th: 12px; --td: 14px; --rowH: 64px; --padX: 18px;
+      --bg:#0b1220;
+      --card:#0f1a2e;
+      --text:#e7eefc;
+      --muted:#b7c4e6;
+      --line:rgba(255,255,255,.10);
+      --ok:#35d07f;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --accent:#6aa9ff;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
-    *{ box-sizing:border-box; }
-    html, body{ width:100%; height:100%; margin:0; overflow:hidden;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(106,169,255,.35), transparent 60%),
+                  radial-gradient(900px 500px at 110% 10%, rgba(53,208,127,.25), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      overflow:hidden; /* fullscreen signage */
+    }
 
-    .bg{ position:fixed; inset:0;
-      background:
-        radial-gradient(900px 650px at 15% 20%, rgba(239,68,68,.28), transparent 60%),
-        radial-gradient(900px 650px at 85% 25%, rgba(13,122,107,.30), transparent 62%),
-        radial-gradient(900px 650px at 78% 86%, rgba(31,42,107,.28), transparent 62%),
-        linear-gradient(135deg, var(--bg1), var(--bg2) 45%, var(--bg3)); }
+    header{
+      padding:18px 22px 14px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.65));
+      backdrop-filter: blur(10px);
+    }
+    .top{
+      display:grid;
+      grid-template-columns: 340px 1fr 260px;
+      gap:16px;
+      align-items:center;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      width:56px; height:56px; border-radius:16px;
+      display:grid; place-items:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      font-weight:900; font-size:30px;
+    }
+    .brandtxt{line-height:1}
+    .brandtxt .a{font-weight:800; opacity:.9}
+    .brandtxt .b{font-weight:950; font-size:26px; letter-spacing:-.2px}
 
-    .stage{ position:fixed; inset:0; padding: clamp(14px, 2vw, 24px);
-      display:flex; flex-direction:column; gap: clamp(10px, 1.3vw, 16px); }
+    .title{
+      text-align:center;
+    }
+    .title .h{
+      font-size:34px;
+      font-weight:950;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin:0;
+    }
+    .title .s{
+      margin-top:6px;
+      color:var(--muted);
+      display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+      font-size:14px;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+      font-size:12px;
+    }
+    .pill code{font-family:var(--mono); color:var(--text)}
 
-    .top{ display:grid; grid-template-columns: 320px 1fr 220px;
-      align-items:center; gap: 14px; color: rgba(255,255,255,.92); }
+    .clock{
+      justify-self:end;
+      display:flex; align-items:flex-end; gap:10px;
+      font-family:var(--mono);
+    }
+    .clock .t{font-size:52px; font-weight:900; letter-spacing:-1px;}
+    .clock .s{font-size:22px; font-weight:800; opacity:.9; transform: translateY(-6px);}
 
-    .brand{ display:flex; align-items:center; gap:12px; }
-    .logoBox{ width:58px; height:58px; border-radius:14px;
-      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18);
-      display:grid; place-items:center; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
-    .logoU{ font-weight: 900; font-size: 34px; letter-spacing: -1px; }
-    .brandText{ line-height: 1.0; }
-    .brandLine1{ font-size: 18px; font-weight: 700; opacity:.92; }
-    .brandLine2{ font-size: 26px; font-weight: 900; letter-spacing:-.3px; }
+    main{
+      height: calc(100% - 108px);
+      padding: 16px 22px 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
 
-    .title{ text-align:center; }
-    .titleBig{ font-size: 34px; font-weight: 950; letter-spacing: .6px; text-transform: uppercase; }
-    .titleSub{ margin-top: 6px; font-size: 18px; opacity:.92;
-      display:flex; justify-content:center; gap: 10px; align-items:center; }
-    .dotSep{ opacity:.55; }
-    .pill{ display:inline-block; padding: 6px 12px; border-radius: 999px;
-      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); }
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .kpi{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+      min-height: 74px;
+    }
+    .kpi .t{font-size:12px; color:var(--muted)}
+    .kpi .v{font-size:26px; font-weight:900; margin-top:6px}
 
-    .clock{ justify-self:end; display:flex; align-items:flex-end; gap: 8px; }
-    .clockTime{ font-size: 52px; font-weight: 950; letter-spacing: -1px; }
-    .clockSec{ font-size: 26px; font-weight: 900; transform: translateY(-6px); }
+    .card{
+      flex:1;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
 
-    .card{ flex:1; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.16);
-      border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px;
-      display:flex; flex-direction:column; gap: 12px; overflow:hidden; }
+    .tableHead{
+      padding: 10px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      color: var(--muted);
+      font-size:12px;
+    }
 
-    .kpis{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    .kpi{ background: rgba(255,255,255,.92); border: 1px solid rgba(15,23,42,.08);
-      border-radius: 14px; padding: 12px 14px; }
-    .kpiNum{ font-size: 30px; font-weight: 950; color: var(--text); line-height:1.05; }
-    .kpiLbl{ margin-top: 2px; font-size: 13px; font-weight: 700; color: rgba(15,23,42,.60); }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      table-layout: fixed;
+    }
+    th, td{
+      padding:12px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th{
+      text-align:left;
+      color: var(--muted);
+      font-weight:700;
+      font-size:12px;
+      white-space:nowrap;
+    }
 
-    .tableWrap{ flex:1; background: var(--card); border-radius: 14px; overflow:hidden;
-      border: 1px solid rgba(15,23,42,.06); }
+    /* Spaltenbreiten wie in deinem Screenshot */
+    th:nth-child(1), td:nth-child(1){ width:120px; } /* Datum */
+    th:nth-child(2), td:nth-child(2){ width:140px; } /* Zeit */
+    th:nth-child(4), td:nth-child(4){ width:280px; } /* Ort */
+    th:nth-child(5), td:nth-child(5){ width:200px; } /* Trainer */
+    th:nth-child(6), td:nth-child(6){ width:180px; } /* Belegung */
 
-    .tbl{ width:100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-    .tbl thead th{ text-align:left; font-size: var(--th); letter-spacing: .02em; color: rgba(15,23,42,.70);
-      font-weight: 800; padding: 14px var(--padX); border-bottom: 1px solid var(--line); background: #ffffff; }
-    .tbl tbody td{ font-size: var(--td); color: var(--text); padding: 10px var(--padX); height: var(--rowH);
-      border-bottom: 1px solid var(--line); vertical-align: middle; }
+    td:nth-child(3){ white-space:normal; word-break:break-word; }
 
-    .colDate{ width: 120px; } .colTime{ width: 140px; } .colCourse{ width: 420px; }
-    .colPlace{ width: 260px; } .colTrainer{ width: 190px; } .colOcc{ width: 170px; }
+    .scroll{
+      flex:1;
+      overflow:hidden; /* wir scrollen per JS smooth */
+    }
 
-    .tbodyScroll{ height: calc(100% - 49px); overflow:hidden; }
+    .courseLine{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      min-width:0;
+    }
+    .courseTitle{
+      flex:1 1 340px;
+      min-width: 260px;
+      font-weight:800;
+      line-height:1.15;
+    }
+    .courseid{
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(231,238,252,.95);
+      white-space:nowrap;
+    }
 
-    .courseTitle{ font-weight: 800; line-height: 1.15; }
-    .courseMeta{ margin-top: 6px; display:flex; gap: 10px; align-items:center; }
-    .codePill{ display:inline-flex; align-items:center; padding: 4px 10px; border-radius: 999px;
-      background: rgba(15,23,42,.06); border: 1px solid rgba(15,23,42,.08);
-      font-size: 12px; font-weight: 800; color: rgba(15,23,42,.75); }
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .dot{width:10px; height:10px; border-radius:999px; background: var(--accent);}
+    .dot.ok{background:var(--ok)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
 
-    .occWrap{ display:flex; flex-direction:column; gap: 6px; }
-    .occTop{ display:flex; align-items:center; gap: 8px; font-weight: 900; }
-    .occDot{ width: 10px; height: 10px; border-radius: 999px; }
-    .occDot.green{ background: var(--green); } .occDot.amber{ background: var(--amber); } .occDot.red{ background: var(--red); }
-    .occSub{ color: rgba(15,23,42,.70); font-weight: 800; font-size: 12px; }
+    .muted{color:var(--muted)}
+    .mono{font-family:var(--mono)}
 
-    .bottom{ display:grid; grid-template-columns: 260px 1fr 320px; gap: 10px; align-items:center; }
-    .qrBox{ display:flex; align-items:center; gap: 12px; background: rgba(255,255,255,.92);
-      border: 1px solid rgba(15,23,42,.08); border-radius: 14px; padding: 10px 12px; }
-    .qrFake{ width: 66px; height: 66px; border-radius: 12px; background: #fff;
-      border: 1px dashed rgba(15,23,42,.25); display:grid; place-items:center; color: rgba(15,23,42,.6); font-weight: 900; }
-    .qrTitle{ font-weight: 900; color: var(--text); } .qrSub{ font-weight: 900; color: #e11d2e; }
-    .contact{ text-align:center; color: rgba(255,255,255,.92); }
-    .contactTitle{ font-weight: 900; letter-spacing: .08em; font-size: 12px; opacity:.95; }
-    .contactRow{ margin-top: 4px; font-weight: 700; opacity:.88; }
-    .sep{ margin: 0 10px; opacity:.6; }
-    .nextBox{ background: rgba(255,255,255,.92); border: 1px solid rgba(15,23,42,.08);
-      border-radius: 14px; padding: 10px 12px; text-align:right; }
-    .nextLbl{ font-weight: 800; color: rgba(15,23,42,.60); font-size: 12px; }
-    .nextVal{ font-weight: 950; color: var(--text); font-size: 18px; margin-top: 2px; }
-
-    /* tiny debug badge (shows JSON status) */
-    .dbg{ position:fixed; left:12px; bottom:12px; font-size:12px; font-weight:800;
-      padding:6px 10px; border-radius:999px; background: rgba(0,0,0,.45); color:#fff; border:1px solid rgba(255,255,255,.18); }
+    .dbg{
+      position: fixed;
+      left: 14px;
+      bottom: 14px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(15,26,46,.85);
+      color: var(--text);
+      font: 12px var(--mono);
+      display:none; /* set to block if you want */
+    }
   </style>
 </head>
 
 <body>
-  <div class="bg"></div>
-
-  <main class="stage">
-    <header class="top">
-      <div class="brand">
-        <div class="logoBox" aria-hidden="true"><span class="logoU">U</span></div>
-        <div class="brandText">
-          <div class="brandLine1">Formation</div>
-          <div class="brandLine2">UniPop</div>
-        </div>
+<header>
+  <div class="top">
+    <div class="brand">
+      <div class="logo">U</div>
+      <div class="brandtxt">
+        <div class="a">Formation</div>
+        <div class="b">UniPop</div>
       </div>
+    </div>
 
-      <div class="title">
-        <div class="titleBig">PROGRAMME DU JOUR</div>
-        <div class="titleSub">
-          <span id="dateText">—</span>
-          <span class="dotSep">•</span>
-          <span class="pill" id="siteText">—</span>
-        </div>
+    <div class="title">
+      <h1 class="h">PROGRAMME DU JOUR</h1>
+      <div class="s">
+        <span class="pill">Date: <code id="dateLabel">–</code></span>
+        <span class="pill">Filtre: <code>UNIPOP</code></span>
+        <span class="pill">Source: <code id="srcLabel">data/trainings.json</code></span>
       </div>
+    </div>
 
-      <div class="clock">
-        <div class="clockTime" id="timeText">--:--</div>
-        <div class="clockSec" id="secText">--</div>
-      </div>
-    </header>
+    <div class="clock">
+      <div class="t" id="clockTime">--:--</div>
+      <div class="s" id="clockSec">--</div>
+    </div>
+  </div>
+</header>
 
-    <section class="card">
-      <div class="kpis">
-        <div class="kpi"><div class="kpiNum" id="kpiCourses">—</div><div class="kpiLbl">Cours aujourd’hui</div></div>
-        <div class="kpi"><div class="kpiNum" id="kpiPeople">—</div><div class="kpiLbl">Participants</div></div>
-        <div class="kpi"><div class="kpiNum" id="kpiFull">—</div><div class="kpiLbl">Cours complets</div></div>
-        <div class="kpi"><div class="kpiNum" id="kpiNext">—</div><div class="kpiLbl">Prochain</div></div>
-      </div>
+<main>
+  <section class="kpis">
+    <div class="kpi"><div class="t">Kurse heute (UniPop)</div><div class="v" id="kpiCourses">–</div></div>
+    <div class="kpi"><div class="t">Teilnehmende (gebucht)</div><div class="v" id="kpiBooked">–</div></div>
+    <div class="kpi"><div class="t">Plätze (gebucht/gesamt)</div><div class="v" id="kpiSlots">–</div></div>
+    <div class="kpi"><div class="t">Ø Auslastung</div><div class="v" id="kpiOcc">–</div></div>
+  </section>
 
-      <div class="tableWrap">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th class="colDate">Datum</th>
-              <th class="colTime">Zeit</th>
-              <th class="colCourse">Kurs</th>
-              <th class="colPlace">Ort</th>
-              <th class="colTrainer">Trainer</th>
-              <th class="colOcc">Belegung</th>
-            </tr>
-          </thead>
-        </table>
+  <section class="card">
+    <div class="tableHead">
+      <div id="lastRefresh">Letzter Refresh: –</div>
+      <div id="itemCount">Items: –</div>
+    </div>
 
-        <div class="tbodyScroll" id="tbodyScroll">
-          <table class="tbl" aria-hidden="true">
-            <tbody id="rows"></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="scroll" id="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Zeit</th>
+            <th>Kurs</th>
+            <th>Ort</th>
+            <th>Trainer</th>
+            <th>Belegung</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="6" class="muted">Noch keine Daten geladen…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
 
-      <footer class="bottom">
-        <div class="qrBox">
-          <div class="qrFake">QR</div>
-          <div class="qrLabel">
-            <div class="qrTitle">Programme complet</div>
-            <div class="qrSub">&amp; inscriptions</div>
-          </div>
-        </div>
+<div class="dbg" id="dbg">dbg</div>
 
-        <div class="contact">
-          <div class="contactTitle">UNIVERSITÉ POPULAIRE LUXEMBOURG</div>
-          <div class="contactRow">
-            <span>+352 247 56 400</span><span class="sep">•</span>
-            <span>info@unipop.lu</span><span class="sep">•</span>
-            <span>unipop.lu</span>
-          </div>
-        </div>
+<script>
+  const DATA_URL = "data/trainings.json";   // ✅ WICHTIG: wie gestern!
+  const TZ = "Europe/Luxembourg";
 
-        <div class="nextBox">
-          <div class="nextLbl">Prochaine session dans:</div>
-          <div class="nextVal" id="countdown">—</div>
-        </div>
-      </footer>
-    </section>
-  </main>
+  const el = (id)=>document.getElementById(id);
+  const tbody = el("tbody");
+  const dateLabel = el("dateLabel");
+  const srcLabel = el("srcLabel");
+  const lastRefresh = el("lastRefresh");
+  const itemCount = el("itemCount");
+  const dbg = el("dbg");
 
-  <div class="dbg" id="dbg">loading…</div>
+  const kpiCourses = el("kpiCourses");
+  const kpiBooked  = el("kpiBooked");
+  const kpiSlots   = el("kpiSlots");
+  const kpiOcc     = el("kpiOcc");
 
-  <script>
-    const TZ = "Europe/Luxembourg";
-    const DATA_URL = "./data/today.json";
-    const REFRESH_MS = 60000;
-    const SCROLL_SPEED_PX_PER_SEC = 28;
-    const SCROLL_PAUSE_MS = 1400;
-    const ROW_MIN_FOR_SCROLL = 7;
+  const clockTime = el("clockTime");
+  const clockSec  = el("clockSec");
 
-    const dbg = document.getElementById("dbg");
-    const elDate = document.getElementById("dateText");
-    const elSite = document.getElementById("siteText");
-    const elTime = document.getElementById("timeText");
-    const elSec  = document.getElementById("secText");
+  const scrollBox = el("scroll");
 
-    const elKpiCourses = document.getElementById("kpiCourses");
-    const elKpiPeople  = document.getElementById("kpiPeople");
-    const elKpiFull    = document.getElementById("kpiFull");
-    const elKpiNext    = document.getElementById("kpiNext");
+  let rawCourses = [];
+  let sessionsToday = [];
+  let scrollState = { running:false, dir:1, raf:0, lastTs:0, pauseUntil:0 };
 
-    const elRows = document.getElementById("rows");
-    const tbodyScroll = document.getElementById("tbodyScroll");
-    const countdownEl = document.getElementById("countdown");
+  function luxNow(){
+    return new Date(new Date().toLocaleString("en-US", { timeZone: TZ }));
+  }
+  function ymdLocal(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+  function fmtDate(d){ return d.toLocaleDateString("de-DE", { timeZone: TZ }); }
+  function fmtTime(d){ return d.toLocaleTimeString("de-DE", { timeZone: TZ, hour:"2-digit", minute:"2-digit" }); }
 
-    let cache = [];
-    let scrollState = { running:false, dir:1, raf:0, lastTs:0, pauseUntil:0 };
-
-    function nowLux(){ return new Date(); }
-    function fmtDateLong(d){
-      return new Intl.DateTimeFormat("fr-FR",{timeZone:TZ,weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(d);
+  function parseFRDateDDMMYYYY(s){
+    if(!s || typeof s !== "string") return null;
+    const m = s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if(!m) return null;
+    const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
+    const d = new Date(yyyy, mm-1, dd, 0,0,0,0);
+    return isNaN(d) ? null : d;
+  }
+  function parseTimeHHMM(s){
+    if(!s || typeof s !== "string") return null;
+    const m = s.trim().match(/^(\d{2}):(\d{2})$/);
+    if(!m) return null;
+    return { h: Number(m[1]), m: Number(m[2]) };
+  }
+  function parseDurationToMinutes(s){
+    if(!s) return null;
+    if(typeof s === "number") return s;
+    if(typeof s !== "string") return null;
+    const t = s.trim().toLowerCase();
+    const mh = t.match(/^(\d+)\s*h(?:\s*(\d+))?$/); // 1h40 / 2h
+    if(mh){
+      const h = Number(mh[1]);
+      const min = mh[2] ? Number(mh[2]) : 0;
+      return h*60 + min;
     }
-    function fmtTimeHM(d){
-      return new Intl.DateTimeFormat("fr-FR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false}).format(d);
-    }
-    function fmtSec(d){ return new Intl.DateTimeFormat("fr-FR",{timeZone:TZ,second:"2-digit"}).format(d); }
-    function capitalize(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
-    function escapeHtml(str){
-      return String(str ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    }
-    function safeNum(x,f=0){ const n=Number(x); return Number.isFinite(n)?n:f; }
-    function parseHHMM(s){
-      const m=/^(\d{1,2}):(\d{2})$/.exec(String(s).trim()); if(!m) return null;
-      const hh=Number(m[1]), mm=Number(m[2]); if(Number.isNaN(hh)||Number.isNaN(mm)) return null;
-      return hh*60+mm;
-    }
-    function pad2(n){ return String(n).padStart(2,"0"); }
-    function formatDateDMY(iso){
-      const s=String(iso||""); if(/^\d{4}-\d{2}-\d{2}$/.test(s)){ const [y,m,d]=s.split("-"); return `${d}.${m}.${y}`; }
-      return s || "—";
-    }
-    function occPercent(enrolled, capacity){ if(!capacity||capacity<=0) return 0; return Math.round((enrolled/capacity)*100); }
-    function occDotClass(pct){ if(pct>=95) return "green"; if(pct>=70) return "amber"; return "red"; }
-    function sortByStart(items){
-      return [...items].sort((a,b)=> (parseHHMM(a.start||"99:99")??9999) - (parseHHMM(b.start||"99:99")??9999));
-    }
+    const m2 = t.match(/^(\d+)\s*min$/);
+    if(m2) return Number(m2[1]);
+    const m3 = t.match(/^(\d+)$/);
+    if(m3) return Number(m3[1]);
+    return null;
+  }
+  const FR_DAY_TO_JS = {
+    "lundi": 1, "mardi": 2, "mercredi": 3, "jeudi": 4, "vendredi": 5, "samedi": 6, "dimanche": 0
+  };
+  function jsDayFromFR(fr){
+    if(!fr) return null;
+    const key = String(fr).trim().toLowerCase();
+    return (key in FR_DAY_TO_JS) ? FR_DAY_TO_JS[key] : null;
+  }
+  function makeDateTimeOnDay(dayDate, hhmm){
+    const d = new Date(dayDate);
+    d.setHours(hhmm.h, hhmm.m, 0, 0);
+    return d;
+  }
+  function overlaps(aStart, aEnd, bStart, bEnd){
+    return aStart < bEnd && aEnd > bStart;
+  }
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
 
-    function computeKPIs(items){
-      const totalCourses = items.length;
-      const totalPeople = items.reduce((s,x)=> s + safeNum(x.enrolled,0), 0);
-      const fullCount = items.filter(x => safeNum(x.capacity,0)>0 && safeNum(x.enrolled,0)>=safeNum(x.capacity,0)).length;
+  function occPct(booked, capacity){
+    if(!(Number.isFinite(booked) && Number.isFinite(capacity) && capacity > 0)) return null;
+    return Math.max(0, Math.min(100, (booked / capacity) * 100));
+  }
+  function occDotClass(p){
+    if(p === null) return "dot";
+    if(p >= 80) return "dot ok";
+    if(p >= 50) return "dot warn";
+    return "dot bad";
+  }
 
-      const cur = parseHHMM(fmtTimeHM(nowLux()));
-      const next = sortByStart(items).find(x => {
-        const s = parseHHMM(x.start||"");
-        return cur!=null && s!=null && s>=cur;
-      }) || null;
-
-      elKpiCourses.textContent = String(totalCourses);
-      elKpiPeople.textContent  = String(totalPeople);
-      elKpiFull.textContent    = String(fullCount);
-      elKpiNext.textContent    = next ? next.start : "—";
-      return next;
+  function getItems(payload){
+    if(Array.isArray(payload)) return payload;
+    if(payload && typeof payload === "object"){
+      for(const k of ["items","data","trainings","results"]){
+        if(Array.isArray(payload[k])) return payload[k];
+      }
+      const vals = Object.values(payload);
+      if(vals.length && vals.slice(0, Math.min(vals.length,20)).every(v => v && typeof v === "object" && !Array.isArray(v))) return vals;
     }
+    return [];
+  }
 
-    function updateCountdown(next){
-      if(!next){ countdownEl.textContent="—"; return; }
-      const cur = parseHHMM(fmtTimeHM(nowLux()));
-      const nxt = parseHHMM(next.start||"");
-      if(cur==null||nxt==null){ countdownEl.textContent=`${next.start||"—"} • ${next.title||""}`; return; }
-      let diff = nxt-cur; if(diff<0) diff=0;
-      const h=Math.floor(diff/60), m=diff%60;
-      countdownEl.textContent = `${pad2(h)}h ${pad2(m)}m • ${next.start} • ${next.title}`;
-    }
+  function passesUniPop(c){
+    const orgCode = (c.organisateur && c.organisateur.code) ? String(c.organisateur.code) : "";
+    return orgCode === "UNIPOP";
+  }
 
-    function render(dateISO, items){
-      const dateTxt = formatDateDMY(dateISO);
-      elRows.innerHTML="";
-      for(const c of items){
-        const code = c.coursCode || c.code || c.id || "—";
-        const place = c.lieu || c.site || "—";
-        const trainer = c.trainer || c.formateur || "—";
-        const enrolled = safeNum(c.enrolled ?? c.nbInscrits ?? 0);
-        const capacity = safeNum(c.capacity ?? c.nbPlaces ?? 0);
-        const pct = occPercent(enrolled, capacity);
-        const dot = occDotClass(pct);
-        const capShow = capacity>0 ? capacity : Math.max(enrolled,0);
+  function buildTodaySessions(){
+    const now = luxNow();
+    const todayYMD = ymdLocal(now);
 
-        const tr=document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(dateTxt)}</td>
-          <td>${escapeHtml(`${c.start}–${c.end}`)}</td>
-          <td>
-            <div class="courseTitle">${escapeHtml(c.title||"—")}</div>
-            <div class="courseMeta"><span class="codePill">${escapeHtml(String(code))}</span></div>
-          </td>
-          <td>${escapeHtml(place)}</td>
-          <td>${escapeHtml(trainer)}</td>
-          <td>
-            <div class="occWrap">
-              <div class="occTop"><span class="occDot ${dot}"></span><span>${pct}%</span></div>
-              <div class="occSub">${enrolled}/${capShow}</div>
-            </div>
-          </td>`;
-        elRows.appendChild(tr);
+    const startRange = new Date(todayYMD + "T00:00:00");
+    const endRange   = new Date(todayYMD + "T23:59:59");
+
+    const out = [];
+
+    for(const c of rawCourses){
+      if(!c || typeof c !== "object") continue;
+      if(!passesUniPop(c)) continue;
+
+      const dStart = parseFRDateDDMMYYYY(c.dateDebut);
+      const dEnd = parseFRDateDDMMYYYY(c.dateFin);
+      if(!dStart || !dEnd) continue;
+
+      const dEndExclusive = new Date(dEnd.getTime() + 24*3600*1000);
+      if(!overlaps(dStart, dEndExclusive, startRange, endRange)) continue;
+
+      const title = c.intitule || "(sans intitulé)";
+      const location = (c.adresseCours && (c.adresseCours.nom || c.adresseCours.localite || "")) || "";
+      const trainer = Array.isArray(c.enseignants) && c.enseignants.length
+        ? c.enseignants.map(x => [x.prenom, x.nom].filter(Boolean).join(" ").trim()).filter(Boolean).join(", ")
+        : "";
+
+      const booked = Number.isFinite(Number(c.nbInscrits)) ? Number(c.nbInscrits) : null;
+      const capacity = Number.isFinite(Number(c.nbPlaces)) ? Number(c.nbPlaces) : null;
+
+      const horaires = Array.isArray(c.horaires) ? c.horaires : [];
+      if(!horaires.length) continue;
+
+      // nur heute berechnen
+      const day0 = new Date(startRange);
+      day0.setHours(0,0,0,0);
+      if(day0 < dStart || day0 > dEnd) continue;
+
+      const jsDay = day0.getDay();
+
+      for(const h of horaires){
+        const targetJsDay = jsDayFromFR(h.jour);
+        if(targetJsDay === null || targetJsDay !== jsDay) continue;
+
+        const hhmm = parseTimeHHMM(h.heure);
+        if(!hhmm) continue;
+
+        const durMin = parseDurationToMinutes(h.duree);
+        if(!durMin) continue;
+
+        const sdt = makeDateTimeOnDay(day0, hhmm);
+        const edt = new Date(sdt.getTime() + durMin*60000);
+
+        out.push({
+          courseId: c.coursCode || c.coursId || c.id || "",
+          title,
+          date: new Date(day0),
+          start: sdt,
+          end: edt,
+          location,
+          trainer,
+          booked,
+          capacity,
+        });
       }
     }
 
-    function stopAutoScroll(){
-      scrollState.running=false;
-      cancelAnimationFrame(scrollState.raf);
-      scrollState.raf=0; scrollState.lastTs=0; scrollState.pauseUntil=0;
-      tbodyScroll.scrollTop=0;
-    }
-    function setupAutoScroll(rowCount){
-      stopAutoScroll();
-      const canScroll = tbodyScroll.scrollHeight > tbodyScroll.clientHeight + 4;
-      if(!canScroll || rowCount < ROW_MIN_FOR_SCROLL) return;
+    sessionsToday = out.sort((a,b)=>a.start-b.start);
+    dateLabel.textContent = fmtDate(startRange);
+  }
 
-      scrollState.running=true;
-      scrollState.dir=1;
-      scrollState.pauseUntil=performance.now()+SCROLL_PAUSE_MS;
-
-      const step=(ts)=>{
-        if(!scrollState.running) return;
-        if(!scrollState.lastTs) scrollState.lastTs=ts;
-        const dt=(ts-scrollState.lastTs)/1000; scrollState.lastTs=ts;
-
-        if(ts < scrollState.pauseUntil){ scrollState.raf=requestAnimationFrame(step); return; }
-
-        const max = tbodyScroll.scrollHeight - tbodyScroll.clientHeight;
-        const delta = SCROLL_SPEED_PX_PER_SEC * dt * scrollState.dir;
-        tbodyScroll.scrollTop = Math.max(0, Math.min(max, tbodyScroll.scrollTop + delta));
-
-        if(tbodyScroll.scrollTop<=0 && scrollState.dir<0){
-          scrollState.dir=1; scrollState.pauseUntil=ts+SCROLL_PAUSE_MS;
-        } else if(tbodyScroll.scrollTop>=max-1 && scrollState.dir>0){
-          scrollState.dir=-1; scrollState.pauseUntil=ts+SCROLL_PAUSE_MS;
-        }
-        scrollState.raf=requestAnimationFrame(step);
-      };
-      scrollState.raf=requestAnimationFrame(step);
+  function render(){
+    if(!sessionsToday.length){
+      tbody.innerHTML = `<tr><td colspan="6" class="muted">Keine UniPop-Kurse für heute gefunden.</td></tr>`;
+      return;
     }
 
-    function tickClock(){
-      const n=nowLux();
-      elTime.textContent = fmtTimeHM(n);
-      elSec.textContent  = fmtSec(n);
-      elDate.textContent = capitalize(fmtDateLong(n));
+    tbody.innerHTML = sessionsToday.map(it => {
+      const d = fmtDate(it.start);
+      const t = `${fmtTime(it.start)}–${fmtTime(it.end)}`;
+
+      const p = occPct(it.booked, it.capacity);
+      const occText = (p === null)
+        ? `<span class="muted">n/a</span>`
+        : `<span class="tag"><span class="${occDotClass(p)}"></span>${Math.round(p)}%</span>
+           <div class="muted" style="margin-top:6px;font-size:12px;">${it.booked}/${it.capacity}</div>`;
+
+      const idInline = it.courseId
+        ? `<span class="courseid">${escapeHtml(it.courseId)}</span>`
+        : ``;
+
+      return `<tr>
+        <td>${d}</td>
+        <td class="mono">${t}</td>
+        <td>
+          <div class="courseLine">
+            <span class="courseTitle">${escapeHtml(it.title)}</span>
+            ${idInline}
+          </div>
+        </td>
+        <td>${escapeHtml(it.location || "")}</td>
+        <td>${escapeHtml(it.trainer || "")}</td>
+        <td>${occText}</td>
+      </tr>`;
+    }).join("");
+
+    // KPIs
+    const courses = sessionsToday.length;
+    let bookedSum = 0, capSum = 0, occSum = 0, occCount = 0;
+
+    for(const it of sessionsToday){
+      const p = occPct(it.booked, it.capacity);
+      if(p !== null){
+        bookedSum += it.booked;
+        capSum += it.capacity;
+        occSum += p;
+        occCount += 1;
+      }
     }
 
-    async function load(){
-      dbg.textContent = "loading json…";
-      const res = await fetch(DATA_URL + `?v=${Date.now()}`, {cache:"no-store"});
-      if(!res.ok) throw new Error("fetch " + res.status);
-      const json = await res.json();
+    kpiCourses.textContent = String(courses);
+    kpiBooked.textContent  = occCount ? String(bookedSum) : "–";
+    kpiSlots.textContent   = occCount ? `${bookedSum}/${capSum}` : "–";
+    kpiOcc.textContent     = occCount ? `${Math.round(occSum/occCount)}%` : "–";
+  }
 
-      const dateISO = json.date || "";
-      const site = json.site || "UniPop";
-      const list = Array.isArray(json.courses) ? json.courses : [];
+  // auto-scroll (wenn zu viele Zeilen)
+  function stopAutoScroll(){
+    scrollState.running = false;
+    cancelAnimationFrame(scrollState.raf);
+    scrollState.raf = 0;
+    scrollState.lastTs = 0;
+    scrollState.pauseUntil = 0;
+    scrollBox.scrollTop = 0;
+  }
+  function setupAutoScroll(){
+    stopAutoScroll();
 
-      elSite.textContent = site;
-      const items = sortByStart(list);
-      cache = items;
+    // kann nur scrollen, wenn Inhalte höher als Box
+    const canScroll = scrollBox.scrollHeight > scrollBox.clientHeight + 4;
+    if(!canScroll || sessionsToday.length < 7) return;
 
-      render(dateISO, items);
-      const next = computeKPIs(items);
-      updateCountdown(next);
-      setupAutoScroll(items.length);
+    const SPEED = 28;      // px/sec
+    const PAUSE = 1400;    // ms
 
-      dbg.textContent = `OK • rows: ${items.length}`;
-    }
+    scrollState.running = true;
+    scrollState.dir = 1;
+    scrollState.pauseUntil = performance.now() + PAUSE;
 
-    tickClock(); setInterval(tickClock, 250);
-    load().catch(err => { dbg.textContent = "ERR • " + err.message; });
-    setInterval(()=> load().catch(err => { dbg.textContent = "ERR • " + err.message; }), REFRESH_MS);
-    setInterval(()=> { const next = computeKPIs(cache); updateCountdown(next); }, 60000);
-  </script>
+    const step = (ts)=>{
+      if(!scrollState.running) return;
+
+      if(!scrollState.lastTs) scrollState.lastTs = ts;
+      const dt = (ts - scrollState.lastTs)/1000;
+      scrollState.lastTs = ts;
+
+      if(ts < scrollState.pauseUntil){
+        scrollState.raf = requestAnimationFrame(step);
+        return;
+      }
+
+      const max = scrollBox.scrollHeight - scrollBox.clientHeight;
+      scrollBox.scrollTop = Math.max(0, Math.min(max, scrollBox.scrollTop + SPEED*dt*scrollState.dir));
+
+      if(scrollBox.scrollTop <= 0 && scrollState.dir < 0){
+        scrollState.dir = 1;
+        scrollState.pauseUntil = ts + PAUSE;
+      }else if(scrollBox.scrollTop >= max - 1 && scrollState.dir > 0){
+        scrollState.dir = -1;
+        scrollState.pauseUntil = ts + PAUSE;
+      }
+
+      scrollState.raf = requestAnimationFrame(step);
+    };
+    scrollState.raf = requestAnimationFrame(step);
+  }
+
+  async function load(){
+    srcLabel.textContent = DATA_URL;
+    const res = await fetch(DATA_URL + `?v=${Date.now()}`, { cache:"no-store" });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
+    rawCourses = getItems(payload);
+
+    itemCount.textContent = "Items: " + rawCourses.length;
+    lastRefresh.textContent = "Letzter Refresh: " + new Date().toLocaleString("de-DE");
+
+    buildTodaySessions();
+    render();
+    setupAutoScroll();
+  }
+
+  function tickClock(){
+    const n = luxNow();
+    clockTime.textContent = n.toLocaleTimeString("de-DE", { timeZone: TZ, hour:"2-digit", minute:"2-digit" });
+    clockSec.textContent  = n.toLocaleTimeString("de-DE", { timeZone: TZ, second:"2-digit" });
+  }
+
+  // boot
+  tickClock(); setInterval(tickClock, 250);
+  load().catch(err => {
+    tbody.innerHTML = `<tr><td colspan="6" class="muted">Fehler beim Laden: ${escapeHtml(err.message)}</td></tr>`;
+  });
+  setInterval(()=> load().catch(()=>{}), 60_000);
+</script>
 </body>
 </html>
