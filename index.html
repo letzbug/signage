@@ -295,13 +295,23 @@
     .theadIcon svg{ opacity:.95 }
 
     /* ✅ WICHTIG: muss scrollen können */
-    .tbodyScroll{
-      flex:1;
-      overflow-y: auto;     /* <-- vorher hidden */
-      overflow-x: hidden;
-      scroll-behavior: smooth;
-      scrollbar-width: none; /* Firefox */
-    }
+   .tbodyScroll{
+  flex:1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  position: relative;
+}
+
+/* ✅ Header bleibt stehen */
+thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(180deg, rgba(8,12,28,.92), rgba(8,12,28,.78));
+  backdrop-filter: blur(14px);
+}
     .tbodyScroll::-webkit-scrollbar{ width:0; height:0; } /* Chrome/Edge */
 
     .heurePill{
