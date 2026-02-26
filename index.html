@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>UniPop — Programme du jour</title>
+  <link rel="stylesheet" href="./app.css" />
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <main class="stage" aria-label="UniPop Signage">
+    <header class="top">
+      <div class="brand">
+        <!-- Optional: ersetze durch dein SVG in /assets/unipop-logo.svg -->
+        <div class="logoBox" aria-hidden="true">
+          <span class="logoU">U</span>
+        </div>
+        <div class="brandText">
+          <div class="brandLine1">Formation</div>
+          <div class="brandLine2">UniPop</div>
+        </div>
+      </div>
+
+      <div class="title">
+        <div class="titleBig">PROGRAMME DU JOUR</div>
+        <div class="titleSub">
+          <span id="dateText">—</span>
+          <span class="dotSep">•</span>
+          <span class="pill" id="siteText">—</span>
+        </div>
+      </div>
+
+      <div class="clock">
+        <div class="clockTime" id="timeText">--:--</div>
+        <div class="clockSec" id="secText">--</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kpiNum" id="kpiCourses">—</div>
+          <div class="kpiLbl">Cours aujourd’hui</div>
+        </div>
+        <div class="kpi">
+          <div class="kpiNum" id="kpiPeople">—</div>
+          <div class="kpiLbl">Participants</div>
+        </div>
+        <div class="kpi">
+          <div class="kpiNum" id="kpiNow">—</div>
+          <div class="kpiLbl">En cours</div>
+        </div>
+        <div class="kpi">
+          <div class="kpiNum" id="kpiNext">—</div>
+          <div class="kpiLbl">Prochain</div>
+        </div>
+      </div>
+
+      <!-- TABLE (pixel clean wie Bild 1) -->
+      <div class="tableWrap" id="tableWrap">
+        <table class="tbl" role="table" aria-label="Cours du jour">
+          <thead>
+            <tr>
+              <th>Heure</th>
+              <th>Cours</th>
+              <th class="colId">ID</th>
+              <th class="colIns">Inscriptions</th>
+              <th class="colLieu">Lieu</th>
+              <th class="colSalle">Salle</th>
+              <th class="colStat">Statut</th>
+            </tr>
+          </thead>
+        </table>
+
+        <div class="tbodyScroll" id="tbodyScroll">
+          <table class="tbl" aria-hidden="true">
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer class="bottom">
+        <div class="qrBox">
+          <div class="qrFake" id="qrBox">
+            <!-- optional: wenn du später echten QR als IMG reinpackst -->
+            <span class="qrTxt">QR</span>
+          </div>
+          <div class="qrLabel">
+            <div class="qrTitle">Programme complet</div>
+            <div class="qrSub">&amp; inscriptions</div>
+          </div>
+        </div>
+
+        <div class="contact">
+          <div class="contactTitle">UNIVERSITÉ POPULAIRE LUXEMBOURG</div>
+          <div class="contactRow">
+            <span>+352 247 56 400</span>
+            <span class="sep">•</span>
+            <span>info@unipop.lu</span>
+            <span class="sep">•</span>
+            <span>unipop.lu</span>
+          </div>
+        </div>
+
+        <div class="nextBox">
+          <div class="nextLbl">Prochaine session dans:</div>
+          <div class="nextVal" id="countdown">—</div>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
