@@ -163,6 +163,8 @@
       align-items:flex-end;
       gap: 12px;
       padding-right: 6px;
+      width: 300px;
+      justify-content: flex-end;
     }
     .clockTime{
       font-weight: 950;
@@ -170,6 +172,7 @@
       letter-spacing: -2px;
       line-height: .9;
       text-shadow: 0 14px 40px rgba(0,0,0,.35);
+      font-variant-numeric: tabular-nums; /* kein Zappeln */
     }
     .clockSec{
       font-weight: 950;
@@ -177,44 +180,10 @@
       line-height: 1;
       transform: translateY(-10px);
       color: rgba(255,80,80,.92);
+      font-variant-numeric: tabular-nums; /* kein Zappeln */
+      width: 2ch;
+      text-align: right;
     }
-    /* === Footer: echtes, stabiles Vertical-Center (kein "Nachrutschen") === */
-.footer{
-  align-items: stretch;          /* schon so, aber sicher */
-}
-
-/* jede Footer-Box bekommt fixe Innenhöhe und center */
-.footer .footCard{
-  height: 100%;
-  min-height: var(--footerH);
-  display: flex;
-  align-items: center;
-}
-
-/* mittlerer Block: immer exakt mittig */
-.footer .footCard.footMid{
-  height: 100%;
-  min-height: var(--footerH);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;       /* vertikal fix */
-  align-items: center;           /* horizontal fix */
-  text-align: center;
-}
-
-/* wichtig: Default-Margins killen */
-.footer .footMid .midTitle,
-.footer .footMid .midRow{
-  margin: 0 !important;
-}
-
-/* line-height stabilisieren (verhindert Sprung) */
-.footer .footMid .midTitle{
-  line-height: 1.05;
-}
-.footer .footMid .midRow{
-  line-height: 1.1;
-}
 
     /* ---------- KPI STRIP ---------- */
     .kpis{
@@ -260,7 +229,7 @@
     .kpiIcon svg{ position:relative }
 
     .kpiBody{ line-height:1.05; }
-    .kpiVal{ font-weight: 950; font-size: 42px; letter-spacing:-1px; }
+    .kpiVal{ font-weight: 950; font-size: 42px; letter-spacing:-1px; font-variant-numeric: tabular-nums; }
     .kpiLbl{ margin-top:6px; font-weight: 900; font-size: 16px; opacity:.90; }
 
     .kpiA .kpiIcon{ background: linear-gradient(135deg, #b6153a, #3b0a1d); }
@@ -309,6 +278,13 @@
       letter-spacing: .8px;
       text-transform: uppercase;
       border-bottom: 1px solid rgba(255,255,255,.10);
+
+      /* sticky header */
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: linear-gradient(180deg, rgba(8,12,28,.92), rgba(8,12,28,.78));
+      backdrop-filter: blur(14px);
     }
     tbody td{
       height: var(--rowH);
@@ -323,33 +299,29 @@
     .c-id{ width: 140px; }
     .c-insc{ width: 320px; }
     .c-lieu{ width: 170px; }
-    .c-salle{ width: 150px; }
+    .c-salle{ width: 200px; } /* breiter */
     .c-statut{ width: 220px; }
+
+    td.c-salle, th.c-salle{
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .theadIcon{
       display:inline-flex; align-items:center; gap:10px;
     }
     .theadIcon svg{ opacity:.95 }
 
-    /* ✅ WICHTIG: muss scrollen können */
-   .tbodyScroll{
-  flex:1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  position: relative;
-}
-
-/* ✅ Header bleibt stehen */
-thead th{
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: linear-gradient(180deg, rgba(8,12,28,.92), rgba(8,12,28,.78));
-  backdrop-filter: blur(14px);
-}
-    .tbodyScroll::-webkit-scrollbar{ width:0; height:0; } /* Chrome/Edge */
+    .tbodyScroll{
+      flex:1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      position: relative;
+    }
+    .tbodyScroll::-webkit-scrollbar{ width:0; height:0; }
 
     .heurePill{
       display:inline-flex;
@@ -361,6 +333,7 @@ thead th{
       font-weight: 950;
       letter-spacing:.2px;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+      font-variant-numeric: tabular-nums;
     }
 
     .inscWrap{
@@ -373,6 +346,7 @@ thead th{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-weight: 900;
       opacity:.95;
+      font-variant-numeric: tabular-nums;
     }
     .bar{
       position:relative;
@@ -400,6 +374,7 @@ thead th{
       text-transform: uppercase;
       border: 1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.06);
+      white-space: nowrap;
     }
     .status .dot{
       width: 10px; height: 10px;
@@ -430,31 +405,20 @@ thead th{
       align-items:stretch;
     }
 
-  .footCard{
-  border-radius: var(--r1);
-  background: rgba(255,255,255,.92);
-  color: #0b1220;
-  border: 1px solid rgba(255,255,255,.22);
-  box-shadow: var(--shadow);
-  display:flex;
-  align-items:center;        /* vertikal zentriert */
-  justify-content:center;    /* horizontal in der Box zentriert */
-  padding: 18px 22px;
-  gap: 18px;
-}
+    .footCard{
+      height: 100%;
+      min-height: var(--footerH);
+      border-radius: var(--r1);
+      background: rgba(255,255,255,.92);
+      color: #0b1220;
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: var(--shadow);
 
-/* speziell für die mittlere Box: Inhalt exakt mittig */
-.footCard.footMid{
-  flex-direction: column;    /* Title + Zeile untereinander */
-  justify-content: center;   /* vertikal mittig */
-  align-items: center;       /* horizontal mittig */
-  text-align: center;
-  gap: 10px;
-}
-
-/* falls noch “drift” wegen margins */
-.footMid .midTitle{ margin: 0; line-height: 1.1; }
-.footMid .midRow{ margin: 0; }
+      display:flex;
+      align-items:center;
+      padding: 18px 22px;
+      gap: 18px;
+    }
 
     .qrBox{
       width: 110px; height:110px;
@@ -464,6 +428,7 @@ thead th{
       display:grid;
       place-items:center;
       overflow:hidden;
+      flex: 0 0 auto;
     }
     .qrBox img{
       width: 100%;
@@ -492,35 +457,65 @@ thead th{
       transform: translateY(2px);
     }
 
-    /* ✅ FOOTER MID: zentriert + größer */
-    .footMid{
-      justify-content:center;
-      gap: 18px;
-      text-align:center;
+    /* ✅ Footer Mitte: absolut stabil (kein Springen) */
+    .footCard.footMid{
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      gap: 10px;
+
+      /* wichtig: gleiche Innenlogik ab erster Millisekunde */
+      padding-top: 18px;
+      padding-bottom: 18px;
     }
-    .footMid > div{ width:100%; }
+
+    .footMid > div{
+      width: 100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap: 10px;
+      height: 100%;
+    }
+
     .footMid .midTitle{
+      margin: 0 !important;
       font-weight: 950;
       letter-spacing: 1.2px;
-      font-size: 36px;          /* doppelt so groß */
-      text-transform: none;
-    }
-    .midRow{
+      font-size: 36px;
+      line-height: 1.05;
+
+      /* FIX: reserviert Platz -> kein Nachrutschen */
+      min-height: 42px;
       display:flex;
       align-items:center;
-      justify-content:center;   /* zentriert */
+      justify-content:center;
+    }
+
+    .midRow{
+      margin: 0 !important;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       gap: 22px;
-      flex-wrap:wrap;
+      flex-wrap: wrap;
       font-weight: 850;
       color: rgba(0,0,0,.72);
-      margin-top: 10px;
       font-size: 20px;
+      line-height: 1.1;
+
+      /* FIX: reserviert Platz für 1–2 Zeilen */
+      min-height: 52px;
+      align-content: center;
     }
     .midRow b{ color:#0b1220; }
     .ico{
       width: 24px; height:24px;
       display:inline-grid; place-items:center;
       color: #e11d48;
+      flex: 0 0 auto;
     }
 
     .footRight{
@@ -535,6 +530,7 @@ thead th{
       border-radius: var(--r1);
       box-shadow: var(--shadow);
       gap: 10px;
+      min-height: var(--footerH);
     }
     .footRight .lbl{
       font-size: 22px;
@@ -562,9 +558,10 @@ thead th{
       font-weight: 950;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       box-shadow: 0 14px 40px rgba(0,0,0,.22);
+      font-variant-numeric: tabular-nums;
     }
 
-    /* ✅ Debug komplett aus */
+    /* Debug aus */
     .dbg{ display:none !important; }
   </style>
 </head>
@@ -793,14 +790,13 @@ thead th{
     const TZ = "Europe/Luxembourg";
 
     const SITE_FILTER = (new URLSearchParams(location.search).get("site") || "").trim();
-
     const REFRESH_MS = 60_000;
 
     // “Signage”-Scroll: runter -> pause -> smooth nach oben -> pause -> repeat
-    const SCROLL_STEP_PX = 1;           // fein = smooth
-    const SCROLL_TICK_MS = 18;          // ~55fps
-    const SCROLL_PAUSE_MS = 1200;       // pause oben/unten
-    const SCROLL_START_DELAY_MS = 800;  // nach Render warten
+    const SCROLL_STEP_PX = 1;
+    const SCROLL_TICK_MS = 18;
+    const SCROLL_PAUSE_MS = 1200;
+    const SCROLL_START_DELAY_MS = 800;
 
     /* =========================
        DOM
@@ -988,13 +984,13 @@ thead th{
           const sdt = makeDateTimeOnDay(day0, hhmm);
           const edt = new Date(sdt.getTime() + durMin*60000);
 
+          /* ✅ SALLE: KEIN Fallback auf horairePrevu (das sind Uhrzeiten!) */
           const salle = (
-  h.salle || h.salleCode || h.salleNom ||
-  c.salle || c.salleCode || c.salleNom ||
-  c.adresseCours?.salle || c.adresseCours?.salleCode || c.adresseCours?.salleNom ||
-  c.horairePrevu ||  /* fallback falls Salle nicht geliefert wird */
-  "—"
-);
+            h.salle || h.salleCode || h.salleNom ||
+            c.salle || c.salleCode || c.salleNom ||
+            c.adresseCours?.salle || c.adresseCours?.salleCode || c.adresseCours?.salleNom ||
+            "—"
+          );
 
           out.push({
             title,
@@ -1145,7 +1141,7 @@ thead th{
     }
 
     /* =========================
-       SIGNAGE AUTO SCROLL (cool loop)
+       SIGNAGE AUTO SCROLL
     ========================== */
     function stopAutoScroll(){
       if(scrollTimer) clearInterval(scrollTimer);
@@ -1157,11 +1153,9 @@ thead th{
     function startAutoScroll(){
       stopAutoScroll();
 
-      // nur wenn wirklich mehr Inhalt als sichtbar
       const max = tbodyScroll.scrollHeight - tbodyScroll.clientHeight;
       if(max <= 4) return;
 
-      // Start oben
       tbodyScroll.scrollTop = 0;
       scrollDir = 1;
       scrollPausedUntil = Date.now() + SCROLL_PAUSE_MS;
@@ -1173,16 +1167,13 @@ thead th{
 
         if(now < scrollPausedUntil) return;
 
-        // bewegen
         tbodyScroll.scrollTop += SCROLL_STEP_PX * scrollDir;
 
-        // unten erreicht
         if(tbodyScroll.scrollTop >= max2 - 1 && scrollDir > 0){
           scrollDir = -1;
           scrollPausedUntil = now + SCROLL_PAUSE_MS;
         }
 
-        // oben erreicht
         if(tbodyScroll.scrollTop <= 0 && scrollDir < 0){
           scrollDir = 1;
           scrollPausedUntil = now + SCROLL_PAUSE_MS;
@@ -1204,7 +1195,6 @@ thead th{
       renderTable();
       computeKPIs();
 
-      // nach Render kurz warten, dann Scroll starten (damit scrollHeight stimmt)
       setTimeout(() => startAutoScroll(), SCROLL_START_DELAY_MS);
 
       dbg.textContent = `OK • raw:${rawCourses.length} • today:${sessionsToday.length} • site:${SITE_FILTER||"ALL"} • url:${DATA_URL}`;
