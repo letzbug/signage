@@ -393,17 +393,31 @@ thead th{
       align-items:stretch;
     }
 
-    .footCard{
-      border-radius: var(--r1);
-      background: rgba(255,255,255,.92);
-      color: #0b1220;
-      border: 1px solid rgba(255,255,255,.22);
-      box-shadow: var(--shadow);
-      display:flex;
-      align-items:center;
-      padding: 18px 22px;
-      gap: 18px;
-    }
+  .footCard{
+  border-radius: var(--r1);
+  background: rgba(255,255,255,.92);
+  color: #0b1220;
+  border: 1px solid rgba(255,255,255,.22);
+  box-shadow: var(--shadow);
+  display:flex;
+  align-items:center;        /* vertikal zentriert */
+  justify-content:center;    /* horizontal in der Box zentriert */
+  padding: 18px 22px;
+  gap: 18px;
+}
+
+/* speziell für die mittlere Box: Inhalt exakt mittig */
+.footCard.footMid{
+  flex-direction: column;    /* Title + Zeile untereinander */
+  justify-content: center;   /* vertikal mittig */
+  align-items: center;       /* horizontal mittig */
+  text-align: center;
+  gap: 10px;
+}
+
+/* falls noch “drift” wegen margins */
+.footMid .midTitle{ margin: 0; line-height: 1.1; }
+.footMid .midRow{ margin: 0; }
 
     .qrBox{
       width: 110px; height:110px;
