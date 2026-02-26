@@ -7,40 +7,31 @@
 
   <style>
     :root{
-      /* base */
       --txt:#f3f6ff;
       --muted: rgba(243,246,255,.78);
       --line: rgba(255,255,255,.12);
-      --line2: rgba(255,255,255,.18);
 
-      /* glass */
       --glass: rgba(10, 16, 34, .48);
       --glass2: rgba(10, 16, 34, .38);
 
-      /* accents */
       --accentA:#7c5cff;
       --accentB:#1ee6a8;
       --accentC:#ff2c6d;
       --accentD:#00a3ff;
 
-      /* status */
       --ok:#35d07f;
       --warn:#ffcc66;
       --bad:#ff3b6b;
       --info:#4aa3ff;
 
-      /* card */
       --r1: 26px;
-      --r2: 22px;
       --shadow: 0 22px 70px rgba(0,0,0,.42);
 
-      /* sizing */
       --pad: 28px;
       --topH: 124px;
       --kpiH: 110px;
       --footerH: 150px;
 
-      /* table */
       --rowH: 64px;
       --theadH: 62px;
 
@@ -56,7 +47,6 @@
       background: #0a0f23;
     }
 
-    /* background like mock */
     .bg{
       position: fixed; inset:0;
       background:
@@ -130,32 +120,12 @@
       text-shadow: 0 10px 20px rgba(0,0,0,.3);
     }
 
-    .brandText{
-      line-height:1.05;
-    }
-    .brandText .l1{
-      font-weight: 800;
-      font-size: 28px;
-      opacity: .95;
-      letter-spacing:.2px;
-    }
-    .brandText .l2{
-      font-weight: 950;
-      font-size: 30px;
-      margin-top: 2px;
-      letter-spacing:-.2px;
-    }
+    .brandText{ line-height:1.05; }
+    .brandText .l1{ font-weight: 800; font-size: 28px; opacity: .95; letter-spacing:.2px; }
+    .brandText .l2{ font-weight: 950; font-size: 30px; margin-top: 2px; letter-spacing:-.2px; }
 
-    .titleBox{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 22px;
-    }
-    .titleBlock{
-      text-align:center;
-      padding: 6px 0;
-    }
+    .titleBox{ display:flex; align-items:center; justify-content:center; gap: 22px; }
+    .titleBlock{ text-align:center; padding: 6px 0; }
     .titleBlock .h{
       font-weight: 950;
       font-size: 44px;
@@ -223,14 +193,12 @@
     }
 
     .kpi{
-      position:relative;
       display:flex;
       gap: 14px;
       align-items:center;
       padding: 18px 22px;
       color: #0b1220;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.52));
+      background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.52));
     }
     .kpi:not(:last-child){
       border-right: 1px solid rgba(0,0,0,.08);
@@ -313,7 +281,6 @@
       vertical-align: middle;
     }
 
-    /* column widths like mock */
     .c-heure{ width: 180px; }
     .c-cours{ width: 360px; }
     .c-id{ width: 110px; }
@@ -329,7 +296,7 @@
 
     .tbodyScroll{
       flex:1;
-      overflow:hidden; /* JS auto scroll */
+      overflow:hidden;
     }
 
     .heurePill{
@@ -428,10 +395,17 @@
       border-radius: 18px;
       background: #fff;
       border: 1px dashed rgba(0,0,0,.25);
-      display:grid; place-items:center;
-      font-weight: 950;
-      color: rgba(0,0,0,.40);
+      display:grid;
+      place-items:center;
+      overflow:hidden;
     }
+    .qrBox img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+
     .footLeftTxt .t1{
       font-size: 22px;
       font-weight: 950;
@@ -518,7 +492,7 @@
       box-shadow: 0 14px 40px rgba(0,0,0,.22);
     }
 
-    /* debug badge (optional) */
+    /* Debug badge */
     .dbg{
       position: fixed;
       left: 16px;
@@ -530,7 +504,7 @@
       color: rgba(255,255,255,.90);
       font: 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       backdrop-filter: blur(10px);
-      display:none; /* set to block if you want */
+      display:block;
       z-index: 20;
     }
   </style>
@@ -556,7 +530,7 @@
           <div class="sub">
             <span id="dayText">—</span>
             <span style="opacity:.55">•</span>
-            <span class="pill" id="sitePill">Belval</span>
+            <span class="pill" id="sitePill">Tous sites</span>
           </div>
         </div>
       </div>
@@ -685,9 +659,7 @@
                     SALLE
                   </span>
                 </th>
-                <th class="c-statut">
-                  STATUT
-                </th>
+                <th class="c-statut">STATUT</th>
               </tr>
             </thead>
             <tbody id="rows">
@@ -701,7 +673,9 @@
     <!-- FOOTER -->
     <div class="footer">
       <div class="footCard">
-        <div class="qrBox">QR</div>
+        <div class="qrBox">
+          <img src="Unipop_QR.png" alt="QR Code UniPop">
+        </div>
         <div class="footLeftTxt">
           <div class="t1">Programme complet</div>
           <div class="t2">&amp; inscriptions</div>
@@ -711,7 +685,7 @@
 
       <div class="footCard footMid">
         <div>
-          <div class="midTitle">UNIVERSITÉ POPULAIRE LUXEMBOURG</div>
+          <div class="midTitle">UniPop LUXEMBOURG</div>
           <div class="midRow">
             <span class="ico" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -759,14 +733,11 @@
     const DATA_URL = "https://letzbug.github.io/magic/data/trainings.json";
     const TZ = "Europe/Luxembourg";
 
-    // optional: site filter like mock
-    // use URL param: ?site=Belval  (or Walfer / Kirchberg etc.)
-    const SITE_FILTER = (new URLSearchParams(location.search).get("site") || "Belval").trim();
+    // OPTIONAL: filter by site via URL ?site=Belval
+    // Default "" => all sites
+    const SITE_FILTER = (new URLSearchParams(location.search).get("site") || "").trim();
 
-    // refresh behavior
     const REFRESH_MS = 60_000;
-
-    // scroll behavior
     const SCROLL_SPEED_PX_PER_SEC = 28;
     const SCROLL_PAUSE_MS = 1400;
     const MIN_ROWS_FOR_SCROLL = 7;
@@ -804,14 +775,10 @@
       return new Date(new Date().toLocaleString("en-US", { timeZone: TZ }));
     }
     function fmtDayLong(d){
-      // "Mercredi 25 février 2026"
       return d.toLocaleDateString("fr-FR", { timeZone: TZ, weekday:"long", day:"numeric", month:"long", year:"numeric" });
     }
     function fmtHM(d){
       return d.toLocaleTimeString("fr-FR", { timeZone: TZ, hour:"2-digit", minute:"2-digit", hour12:false });
-    }
-    function fmtSec(d){
-      return d.toLocaleTimeString("fr-FR", { timeZone: TZ, second:"2-digit" });
     }
     function ymdLocal(d){
       const y = d.getFullYear();
@@ -821,7 +788,7 @@
     }
 
     /* =========================
-       PARSERS (same logic as your "yesterday" file)
+       PARSERS
     ========================== */
     function parseFRDateDDMMYYYY(s){
       if(!s || typeof s !== "string") return null;
@@ -843,7 +810,7 @@
       if(typeof s !== "string") return null;
       const t = s.trim().toLowerCase();
 
-      const mh = t.match(/^(\d+)\s*h(?:\s*(\d+))?$/); // 1h40 / 2h
+      const mh = t.match(/^(\d+)\s*h(?:\s*(\d+))?$/);
       if(mh){
         const h = Number(mh[1]);
         const min = mh[2] ? Number(mh[2]) : 0;
@@ -885,8 +852,18 @@
     }
 
     function passesUniPop(c){
-      const orgCode = (c.organisateur && c.organisateur.code) ? String(c.organisateur.code) : "";
-      return orgCode === "UNIPOP";
+      // 1) organisateur.code
+      const orgCode = (c.organisateur && c.organisateur.code) ? String(c.organisateur.code).trim().toUpperCase() : "";
+      if(orgCode) return orgCode === "UNIPOP";
+
+      // 2) your export sometimes has this field (seen in your screenshot)
+      if(c.categorieCodeUnipop) return true;
+
+      // 3) fallback: adresseCours.nom contains "Université Populaire"
+      const addrName = (c.adresseCours && (c.adresseCours.nom || "")) ? String(c.adresseCours.nom).toLowerCase() : "";
+      if(addrName.includes("universit") && addrName.includes("populaire")) return true;
+
+      return false;
     }
 
     function shortLieuFromLocation(location){
@@ -906,7 +883,7 @@
       const endRange   = new Date(todayYMD + "T23:59:59");
 
       dayText.textContent = fmtDayLong(startRange);
-      sitePill.textContent = SITE_FILTER || "—";
+      sitePill.textContent = SITE_FILTER ? SITE_FILTER : "Tous sites";
 
       const out = [];
 
@@ -925,7 +902,6 @@
         const locationFull = (c.adresseCours && (c.adresseCours.nom || c.adresseCours.localite || "")) || "";
         const lieuShort = shortLieuFromLocation(locationFull);
 
-        // optional filter by site
         if(SITE_FILTER && !lieuShort.toLowerCase().includes(SITE_FILTER.toLowerCase())){
           continue;
         }
@@ -959,7 +935,6 @@
           const sdt = makeDateTimeOnDay(day0, hhmm);
           const edt = new Date(sdt.getTime() + durMin*60000);
 
-          // salle can be in horaires or in course payload (unknown -> fallback "—")
           const salle = (h.salle || h.salleCode || c.salle || c.salleCode || c.salleNom || "—");
 
           out.push({
@@ -996,21 +971,18 @@
       const isNow = now >= s.start && now < s.end;
       const isFuture = now < s.start;
 
-      if(isFull) return { key:"COMPLET", cls:"st-complet", dot:"bad" };
-      if(isNow) return { key:"EN COURS", cls:"st-encours", dot:"ok" };
+      if(isFull) return { key:"COMPLET", cls:"st-complet" };
+      if(isNow) return { key:"EN COURS", cls:"st-encours" };
       if(isFuture){
-        // if capacity known and not full -> places disponibles, else à venir
         if(booked !== null && cap !== null && cap>0 && booked < cap){
-          return { key:"PLACES DISPONIBLES", cls:"st-dispo", dot:"ok" };
+          return { key:"PLACES DISPONIBLES", cls:"st-dispo" };
         }
-        return { key:"À VENIR", cls:"st-avenir", dot:"info" };
+        return { key:"À VENIR", cls:"st-avenir" };
       }
-      // past: keep as À VENIR style but muted (not asked in mock; we keep À VENIR)
-      return { key:"À VENIR", cls:"st-avenir", dot:"info" };
+      return { key:"À VENIR", cls:"st-avenir" };
     }
 
     function barColorForStatus(statusKey){
-      // mimic mock colorful bars
       if(statusKey === "EN COURS") return "linear-gradient(90deg, #ff2c6d, #ff5a85)";
       if(statusKey === "COMPLET") return "linear-gradient(90deg, #ff2c6d, #ff2c6d)";
       if(statusKey === "PLACES DISPONIBLES") return "linear-gradient(90deg, #1ee6a8, #62ffcc)";
@@ -1032,7 +1004,7 @@
 
       if(!sessionsToday.length){
         rows.innerHTML = `<tr><td colspan="7" style="color:rgba(255,255,255,.75);padding:22px 16px;">
-          Aucun cours UniPop trouvé pour aujourd’hui (filtre: ${escapeHtml(SITE_FILTER)}).
+          Aucun cours UniPop trouvé pour aujourd’hui${SITE_FILTER ? " (site: "+escapeHtml(SITE_FILTER)+")" : ""}.
         </td></tr>`;
         return;
       }
@@ -1051,9 +1023,7 @@
 
         return `
           <tr>
-            <td class="c-heure">
-              <span class="heurePill">${escapeHtml(hm)}</span>
-            </td>
+            <td class="c-heure"><span class="heurePill">${escapeHtml(hm)}</span></td>
             <td class="c-cours">${escapeHtml(s.title)}</td>
             <td class="c-id">${escapeHtml(String(s.code || s.id || "—"))}</td>
             <td class="c-insc">
@@ -1081,16 +1051,12 @@
       const now = luxNow();
       const totalCourses = sessionsToday.length;
 
-      // participants = sum booked where available
       let participants = 0;
       for(const s of sessionsToday){
         if(Number.isFinite(s.booked)) participants += s.booked;
       }
 
-      // now running count
       const running = sessionsToday.filter(s => now >= s.start && now < s.end).length;
-
-      // next start time
       const next = sessionsToday.find(s => now < s.start) || null;
       const nextHM = next ? fmtHM(next.start) : "—";
 
@@ -1099,7 +1065,6 @@
       kpiNow.textContent = String(running);
       kpiNext.textContent = nextHM;
 
-      // footer "next session in"
       if(next){
         nextLabel.textContent = `${fmtHM(next.start)} • ${next.title}`;
       }else{
@@ -1180,15 +1145,16 @@
     async function loadData(){
       const res = await fetch(DATA_URL + "?v=" + Date.now(), { cache:"no-store" });
       if(!res.ok) throw new Error("HTTP " + res.status);
+
       const payload = await res.json();
       rawCourses = getItems(payload);
+
       buildTodaySessions();
       renderTable();
       computeKPIs();
       setupAutoScroll();
 
-      // dbg.textContent = `OK • raw:${rawCourses.length} • today:${sessionsToday.length} • site:${SITE_FILTER}`;
-      // dbg.style.display = "block";
+      dbg.textContent = `OK • raw:${rawCourses.length} • today:${sessionsToday.length} • site:${SITE_FILTER||"ALL"} • url:${DATA_URL}`;
     }
 
     function tickClock(){
@@ -1207,12 +1173,12 @@
       rows.innerHTML = `<tr><td colspan="7" style="color:rgba(255,255,255,.75);padding:22px 16px;">
         Erreur de chargement: ${escapeHtml(err.message)}
       </td></tr>`;
+      dbg.textContent = `ERR • ${err.message} • url:${DATA_URL}`;
     });
 
     setInterval(()=> loadData().catch(()=>{}), REFRESH_MS);
 
     setInterval(()=>{
-      // keep KPIs + status live without reloading
       if(sessionsToday.length){
         renderTable();
         computeKPIs();
