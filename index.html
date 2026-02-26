@@ -1,613 +1,1223 @@
 <!doctype html>
-<html lang="de">
+<html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>UniPop — Signage (Heute)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>UniPop — Programme du jour</title>
+
   <style>
     :root{
-      --bg:#0b1220;
-      --card:#0f1a2e;
-      --text:#e7eefc;
-      --muted:#b7c4e6;
-      --line:rgba(255,255,255,.10);
+      /* base */
+      --txt:#f3f6ff;
+      --muted: rgba(243,246,255,.78);
+      --line: rgba(255,255,255,.12);
+      --line2: rgba(255,255,255,.18);
+
+      /* glass */
+      --glass: rgba(10, 16, 34, .48);
+      --glass2: rgba(10, 16, 34, .38);
+
+      /* accents */
+      --accentA:#7c5cff;
+      --accentB:#1ee6a8;
+      --accentC:#ff2c6d;
+      --accentD:#00a3ff;
+
+      /* status */
       --ok:#35d07f;
       --warn:#ffcc66;
-      --bad:#ff6b6b;
-      --accent:#6aa9ff;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius:18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      --sans: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      --bad:#ff3b6b;
+      --info:#4aa3ff;
+
+      /* card */
+      --r1: 26px;
+      --r2: 22px;
+      --shadow: 0 22px 70px rgba(0,0,0,.42);
+
+      /* sizing */
+      --pad: 28px;
+      --topH: 124px;
+      --kpiH: 110px;
+      --footerH: 150px;
+
+      /* table */
+      --rowH: 64px;
+      --theadH: 62px;
+
+      font-synthesis-weight: none;
     }
+
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html,body{height:100%; margin:0}
     body{
-      margin:0; font-family:var(--sans);
-      background: radial-gradient(1200px 600px at 10% -10%, rgba(106,169,255,.35), transparent 60%),
-                  radial-gradient(900px 500px at 110% 10%, rgba(53,208,127,.25), transparent 55%),
-                  var(--bg);
-      color:var(--text);
-      overflow:hidden; /* fullscreen signage */
+      overflow:hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--txt);
+      background: #0a0f23;
     }
 
-    header{
-      padding:18px 22px 14px;
-      border-bottom:1px solid var(--line);
-      background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.65));
-      backdrop-filter: blur(10px);
+    /* background like mock */
+    .bg{
+      position: fixed; inset:0;
+      background:
+        radial-gradient(900px 700px at 18% 18%, rgba(124,92,255,.42), transparent 58%),
+        radial-gradient(920px 720px at 78% 22%, rgba(30,230,168,.34), transparent 58%),
+        radial-gradient(980px 760px at 72% 84%, rgba(255,44,109,.30), transparent 60%),
+        radial-gradient(820px 640px at 10% 82%, rgba(0,163,255,.26), transparent 55%),
+        linear-gradient(135deg, #10183a 0%, #081024 55%, #08122b 100%);
     }
-    .top{
+    .bg::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(1200px 600px at 50% 0%, rgba(255,255,255,.06), transparent 60%),
+        radial-gradient(900px 500px at 0% 100%, rgba(255,255,255,.05), transparent 60%);
+      opacity: .9;
+      pointer-events:none;
+    }
+
+    .stage{
+      position: fixed; inset:0;
+      padding: var(--pad);
+      display:flex;
+      flex-direction:column;
+      gap: 20px;
+    }
+
+    /* ---------- TOP BAR ---------- */
+    .topbar{
+      height: var(--topH);
       display:grid;
-      grid-template-columns: 340px 1fr 260px;
-      gap:16px;
+      grid-template-columns: 420px 1fr 300px;
       align-items:center;
+      gap: 18px;
+      padding: 14px 12px;
     }
-    .brand{
-      display:flex; align-items:center; gap:12px;
-    }
-    .logo{
-      width:56px; height:56px; border-radius:16px;
-      display:grid; place-items:center;
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      box-shadow: var(--shadow);
-      font-weight:900; font-size:30px;
-    }
-    .brandtxt{line-height:1}
-    .brandtxt .a{font-weight:800; opacity:.9}
-    .brandtxt .b{font-weight:950; font-size:26px; letter-spacing:-.2px}
 
-    .title{
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      padding-left: 10px;
+    }
+
+    .logo{
+      width: 72px; height:72px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 14px 40px rgba(0,0,0,.28);
+      overflow:hidden;
+      position:relative;
+    }
+    .logo::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(60px 60px at 25% 20%, rgba(124,92,255,.55), transparent 60%),
+        radial-gradient(70px 70px at 85% 80%, rgba(30,230,168,.45), transparent 60%);
+      filter: blur(2px);
+      opacity:.9;
+    }
+    .logo span{
+      position:relative;
+      font-weight: 950;
+      font-size: 40px;
+      letter-spacing: -2px;
+      color: #dff7ff;
+      text-shadow: 0 10px 20px rgba(0,0,0,.3);
+    }
+
+    .brandText{
+      line-height:1.05;
+    }
+    .brandText .l1{
+      font-weight: 800;
+      font-size: 28px;
+      opacity: .95;
+      letter-spacing:.2px;
+    }
+    .brandText .l2{
+      font-weight: 950;
+      font-size: 30px;
+      margin-top: 2px;
+      letter-spacing:-.2px;
+    }
+
+    .titleBox{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 22px;
+    }
+    .titleBlock{
       text-align:center;
+      padding: 6px 0;
     }
-    .title .h{
-      font-size:34px;
-      font-weight:950;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      margin:0;
+    .titleBlock .h{
+      font-weight: 950;
+      font-size: 44px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 0;
     }
-    .title .s{
-      margin-top:6px;
-      color:var(--muted);
-      display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
-      font-size:14px;
+    .titleBlock .sub{
+      margin-top: 8px;
+      font-size: 22px;
+      color: var(--muted);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap: 14px;
+      flex-wrap:wrap;
     }
     .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background: rgba(255,255,255,.04);
-      font-size:12px;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.16);
+      color: rgba(255,255,255,.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+      font-weight: 800;
     }
-    .pill code{font-family:var(--mono); color:var(--text)}
 
-    .clock{
+    .clockBox{
       justify-self:end;
-      display:flex; align-items:flex-end; gap:10px;
-      font-family:var(--mono);
-    }
-    .clock .t{font-size:52px; font-weight:900; letter-spacing:-1px;}
-    .clock .s{font-size:22px; font-weight:800; opacity:.9; transform: translateY(-6px);}
-
-    main{
-      height: calc(100% - 108px);
-      padding: 16px 22px 18px;
       display:flex;
-      flex-direction:column;
+      align-items:flex-end;
       gap: 12px;
+      padding-right: 6px;
+    }
+    .clockTime{
+      font-weight: 950;
+      font-size: 72px;
+      letter-spacing: -2px;
+      line-height: .9;
+      text-shadow: 0 14px 40px rgba(0,0,0,.35);
+    }
+    .clockSec{
+      font-weight: 950;
+      font-size: 32px;
+      line-height: 1;
+      transform: translateY(-10px);
+      color: rgba(255,80,80,.92);
     }
 
+    /* ---------- KPI STRIP ---------- */
     .kpis{
+      height: var(--kpiH);
+      border-radius: var(--r1);
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
       display:grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-    .kpi{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 12px 14px;
-      min-height: 74px;
-    }
-    .kpi .t{font-size:12px; color:var(--muted)}
-    .kpi .v{font-size:26px; font-weight:900; margin-top:6px}
-
-    .card{
-      flex:1;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
       overflow:hidden;
+    }
+
+    .kpi{
+      position:relative;
+      display:flex;
+      gap: 14px;
+      align-items:center;
+      padding: 18px 22px;
+      color: #0b1220;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.52));
+    }
+    .kpi:not(:last-child){
+      border-right: 1px solid rgba(0,0,0,.08);
+    }
+
+    .kpiIcon{
+      width: 64px; height:64px;
+      border-radius: 18px;
+      display:grid; place-items:center;
+      color: rgba(255,255,255,.95);
+      box-shadow: 0 16px 40px rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .kpiIcon::after{
+      content:"";
+      position:absolute; inset:-10px;
+      background: radial-gradient(60px 60px at 20% 20%, rgba(255,255,255,.30), transparent 60%);
+      opacity:.85;
+      pointer-events:none;
+    }
+    .kpiIcon svg{ position:relative }
+
+    .kpiBody{ line-height:1.05; }
+    .kpiVal{ font-weight: 950; font-size: 42px; letter-spacing:-1px; }
+    .kpiLbl{ margin-top:6px; font-weight: 900; font-size: 16px; opacity:.90; }
+
+    .kpiA .kpiIcon{ background: linear-gradient(135deg, #b6153a, #3b0a1d); }
+    .kpiB .kpiIcon{ background: linear-gradient(135deg, #ff3b6b, #b80b34); }
+    .kpiC .kpiIcon{ background: linear-gradient(135deg, #22c55e, #0b5c3a); }
+    .kpiD .kpiIcon{ background: linear-gradient(135deg, #3b2cff, #120e6c); }
+
+    .kpiC .kpiLbl{
+      color: #0b5c3a;
+      text-decoration: underline;
+      text-decoration-thickness: 3px;
+      text-underline-offset: 6px;
+    }
+
+    /* ---------- TABLE CARD ---------- */
+    .tableCard{
+      flex: 1;
+      border-radius: var(--r1);
+      background: linear-gradient(180deg, rgba(8,12,28,.55), rgba(8,12,28,.45));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow:hidden;
+      position:relative;
+    }
+    .tableInner{
+      position:absolute; inset:0;
+      padding: 16px 18px 16px;
       display:flex;
       flex-direction:column;
-    }
-
-    .tableHead{
-      padding: 10px 14px;
-      border-bottom:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between;
-      color: var(--muted);
-      font-size:12px;
+      gap: 10px;
     }
 
     table{
       width:100%;
       border-collapse: collapse;
-      font-size: 14px;
       table-layout: fixed;
+      font-size: 18px;
     }
-    th, td{
-      padding:12px 10px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: top;
-    }
-    th{
+    thead th{
+      height: var(--theadH);
       text-align:left;
-      color: var(--muted);
-      font-weight:700;
-      font-size:12px;
-      white-space:nowrap;
+      padding: 18px 16px;
+      color: rgba(255,255,255,.85);
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    tbody td{
+      height: var(--rowH);
+      padding: 16px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.92);
+      vertical-align: middle;
     }
 
-    /* Spaltenbreiten wie in deinem Screenshot */
-    th:nth-child(1), td:nth-child(1){ width:120px; } /* Datum */
-    th:nth-child(2), td:nth-child(2){ width:140px; } /* Zeit */
-    th:nth-child(4), td:nth-child(4){ width:280px; } /* Ort */
-    th:nth-child(5), td:nth-child(5){ width:200px; } /* Trainer */
-    th:nth-child(6), td:nth-child(6){ width:180px; } /* Belegung */
+    /* column widths like mock */
+    .c-heure{ width: 180px; }
+    .c-cours{ width: 360px; }
+    .c-id{ width: 110px; }
+    .c-insc{ width: 280px; }
+    .c-lieu{ width: 170px; }
+    .c-salle{ width: 150px; }
+    .c-statut{ width: 210px; }
 
-    td:nth-child(3){ white-space:normal; word-break:break-word; }
+    .theadIcon{
+      display:inline-flex; align-items:center; gap:10px;
+    }
+    .theadIcon svg{ opacity:.95 }
 
-    .scroll{
+    .tbodyScroll{
       flex:1;
-      overflow:hidden; /* wir scrollen per JS smooth */
+      overflow:hidden; /* JS auto scroll */
     }
 
-    .courseLine{
-      display:flex; align-items:center; gap:10px;
-      flex-wrap:wrap;
-      min-width:0;
+    .heurePill{
+      display:inline-flex;
+      align-items:center;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      font-weight: 950;
+      letter-spacing:.2px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
     }
-    .courseTitle{
-      flex:1 1 340px;
-      min-width: 260px;
-      font-weight:800;
-      line-height:1.15;
+
+    .inscWrap{
+      display:flex;
+      align-items:center;
+      gap: 14px;
     }
-    .courseid{
-      display:inline-flex; align-items:center; gap:6px;
-      padding: 3px 10px;
+    .inscText{
+      width: 78px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-weight: 900;
+      opacity:.95;
+    }
+    .bar{
+      position:relative;
+      height: 10px;
+      flex:1;
       border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .bar > i{
+      position:absolute; inset:0;
+      width: 0%;
+      border-radius: 999px;
+      display:block;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 950;
+      letter-spacing:.6px;
+      text-transform: uppercase;
       border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-      font-family: var(--mono);
-      font-size: 12px;
-      color: rgba(231,238,252,.95);
-      white-space:nowrap;
+      background: rgba(255,255,255,.06);
+    }
+    .status .dot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      background: var(--info);
+      box-shadow: 0 0 0 6px rgba(74,163,255,.14);
+    }
+    .st-encours{ background: rgba(53,208,127,.16); border-color: rgba(53,208,127,.28); }
+    .st-encours .dot{ background: var(--ok); box-shadow: 0 0 0 6px rgba(53,208,127,.14); }
+
+    .st-avenir{ background: rgba(74,163,255,.16); border-color: rgba(74,163,255,.28); }
+    .st-avenir .dot{ background: var(--info); box-shadow: 0 0 0 6px rgba(74,163,255,.14); }
+
+    .st-complet{ background: rgba(255,59,107,.16); border-color: rgba(255,59,107,.28); }
+    .st-complet .dot{ background: var(--bad); box-shadow: 0 0 0 6px rgba(255,59,107,.14); }
+
+    .st-dispo{ background: rgba(30,230,168,.14); border-color: rgba(30,230,168,.26); }
+    .st-dispo .dot{ background: #1ee6a8; box-shadow: 0 0 0 6px rgba(30,230,168,.14); }
+
+    /* ---------- FOOTER ---------- */
+    .footer{
+      height: var(--footerH);
+      border-radius: var(--r1);
+      overflow:hidden;
+      display:grid;
+      grid-template-columns: 420px 1fr 560px;
+      gap: 16px;
+      align-items:stretch;
     }
 
-    .tag{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      font-size:12px;
-      white-space:nowrap;
+    .footCard{
+      border-radius: var(--r1);
+      background: rgba(255,255,255,.92);
+      color: #0b1220;
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:center;
+      padding: 18px 22px;
+      gap: 18px;
     }
-    .dot{width:10px; height:10px; border-radius:999px; background: var(--accent);}
-    .dot.ok{background:var(--ok)}
-    .dot.warn{background:var(--warn)}
-    .dot.bad{background:var(--bad)}
 
-    .muted{color:var(--muted)}
-    .mono{font-family:var(--mono)}
+    .qrBox{
+      width: 110px; height:110px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px dashed rgba(0,0,0,.25);
+      display:grid; place-items:center;
+      font-weight: 950;
+      color: rgba(0,0,0,.40);
+    }
+    .footLeftTxt .t1{
+      font-size: 22px;
+      font-weight: 950;
+      line-height:1.05;
+    }
+    .footLeftTxt .t2{
+      margin-top: 6px;
+      font-size: 22px;
+      font-weight: 950;
+      color: #e11d48;
+      line-height:1.05;
+    }
+    .arrow{
+      margin-left:auto;
+      font-weight: 950;
+      color: #e11d48;
+      font-size: 34px;
+      transform: translateY(2px);
+    }
 
+    .footMid{
+      justify-content:center;
+      gap: 28px;
+    }
+    .footMid .midTitle{
+      font-weight: 950;
+      letter-spacing: .8px;
+    }
+    .midRow{
+      display:flex;
+      align-items:center;
+      gap: 16px;
+      flex-wrap:wrap;
+      font-weight: 850;
+      color: rgba(0,0,0,.72);
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    .midRow b{ color:#0b1220; }
+    .ico{
+      width: 24px; height:24px;
+      display:inline-grid; place-items:center;
+      color: #e11d48;
+    }
+
+    .footRight{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(18px);
+      color: var(--txt);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      padding: 18px 22px;
+      border-radius: var(--r1);
+      box-shadow: var(--shadow);
+      gap: 10px;
+    }
+    .footRight .lbl{
+      font-size: 22px;
+      font-weight: 900;
+      color: rgba(255,255,255,.88);
+    }
+    .nextLine{
+      display:flex;
+      align-items:center;
+      gap: 16px;
+      flex-wrap:wrap;
+      font-weight: 950;
+      font-size: 26px;
+    }
+    .timer{
+      margin-left:auto;
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255,59,107,.18);
+      border: 1px solid rgba(255,59,107,.25);
+      color: rgba(255,255,255,.96);
+      font-weight: 950;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      box-shadow: 0 14px 40px rgba(0,0,0,.22);
+    }
+
+    /* debug badge (optional) */
     .dbg{
       position: fixed;
-      left: 14px;
-      bottom: 14px;
-      padding: 6px 10px;
+      left: 16px;
+      bottom: 16px;
+      padding: 8px 12px;
       border-radius: 999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(15,26,46,.85);
-      color: var(--text);
-      font: 12px var(--mono);
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.35);
+      color: rgba(255,255,255,.90);
+      font: 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      backdrop-filter: blur(10px);
       display:none; /* set to block if you want */
+      z-index: 20;
     }
   </style>
 </head>
 
 <body>
-<header>
-  <div class="top">
-    <div class="brand">
-      <div class="logo">U</div>
-      <div class="brandtxt">
-        <div class="a">Formation</div>
-        <div class="b">UniPop</div>
+  <div class="bg"></div>
+
+  <div class="stage">
+    <!-- TOP -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"><span>U</span></div>
+        <div class="brandText">
+          <div class="l1">Formation</div>
+          <div class="l2">UniPop</div>
+        </div>
+      </div>
+
+      <div class="titleBox">
+        <div class="titleBlock">
+          <h1 class="h">PROGRAMME DU JOUR</h1>
+          <div class="sub">
+            <span id="dayText">—</span>
+            <span style="opacity:.55">•</span>
+            <span class="pill" id="sitePill">Belval</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="clockBox">
+        <div class="clockTime" id="clockHM">--:--</div>
+        <div class="clockSec" id="clockS">--</div>
       </div>
     </div>
 
-    <div class="title">
-      <h1 class="h">PROGRAMME DU JOUR</h1>
-      <div class="s">
-        <span class="pill">Date: <code id="dateLabel">–</code></span>
-        <span class="pill">Filtre: <code>UNIPOP</code></span>
-        <span class="pill">Source: <code id="srcLabel">data/trainings.json</code></span>
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi kpiA">
+        <div class="kpiIcon" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M6 4h12a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2-3-2V6a2 2 0 0 1 2-2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M8 8h8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiVal" id="kpiCourses">—</div>
+          <div class="kpiLbl">Cours aujourd’hui</div>
+        </div>
+      </div>
+
+      <div class="kpi kpiB">
+        <div class="kpiIcon" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M16 11a4 4 0 1 0-8 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 20a7 7 0 0 1 16 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="white" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiVal" id="kpiPeople">—</div>
+          <div class="kpiLbl">Participants</div>
+        </div>
+      </div>
+
+      <div class="kpi kpiC">
+        <div class="kpiIcon" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3a9 9 0 1 0 9 9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 7v6l4 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiVal" id="kpiNow">—</div>
+          <div class="kpiLbl">En cours maintenant</div>
+        </div>
+      </div>
+
+      <div class="kpi kpiD">
+        <div class="kpiIcon" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M12 7v5l3 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 22a10 10 0 1 0-10-10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiVal" id="kpiNext">—</div>
+          <div class="kpiLbl">Prochain démarrage</div>
+        </div>
       </div>
     </div>
 
-    <div class="clock">
-      <div class="t" id="clockTime">--:--</div>
-      <div class="s" id="clockSec">--</div>
+    <!-- TABLE -->
+    <div class="tableCard">
+      <div class="tableInner">
+        <div class="tbodyScroll" id="tbodyScroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="c-heure">
+                  <span class="theadIcon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M7 3v3M17 3v3M4 8h16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M6 12h4M6 16h6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M5 5h14a2 2 0 0 1 2 2v14H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="white" stroke-width="2" opacity=".9"/>
+                    </svg>
+                    HEURE
+                  </span>
+                </th>
+                <th class="c-cours">
+                  <span class="theadIcon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2V5Z" stroke="white" stroke-width="2"/>
+                      <path d="M18 3a2 2 0 0 1 2 2v16a2 2 0 0 0-2-2H6" stroke="white" stroke-width="2" opacity=".9"/>
+                    </svg>
+                    COURS
+                  </span>
+                </th>
+                <th class="c-id">
+                  <span class="theadIcon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M8 7h8M8 12h8M8 17h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="white" stroke-width="2" opacity=".9"/>
+                    </svg>
+                    ID
+                  </span>
+                </th>
+                <th class="c-insc">
+                  <span class="theadIcon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M16 11a4 4 0 1 0-8 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M4 20a7 7 0 0 1 16 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    INSCRIPTIONS
+                  </span>
+                </th>
+                <th class="c-lieu">
+                  <span class="theadIcon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 21s7-4.6 7-11a7 7 0 1 0-14 0c0 6.4 7 11 7 11Z" stroke="white" stroke-width="2"/>
+                      <path d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="white" stroke-width="2"/>
+                    </svg>
+                    LIEU
+                  </span>
+                </th>
+                <th class="c-salle">
+                  <span class="theadIcon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M4 7h16v14H4V7Z" stroke="white" stroke-width="2"/>
+                      <path d="M7 7V4h10v3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    SALLE
+                  </span>
+                </th>
+                <th class="c-statut">
+                  STATUT
+                </th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="7" style="color:rgba(255,255,255,.75);padding:22px 16px;">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footCard">
+        <div class="qrBox">QR</div>
+        <div class="footLeftTxt">
+          <div class="t1">Programme complet</div>
+          <div class="t2">&amp; inscriptions</div>
+        </div>
+        <div class="arrow">↗</div>
+      </div>
+
+      <div class="footCard footMid">
+        <div>
+          <div class="midTitle">UNIVERSITÉ POPULAIRE LUXEMBOURG</div>
+          <div class="midRow">
+            <span class="ico" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 3 5.2 2 2 0 0 1 5 3h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L9 10.8a16 16 0 0 0 4.2 4.2l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6A2 2 0 0 1 22 16.9Z" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <b>+352 247 56 400</b>
+
+            <span class="ico" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M4 4h16v16H4V4Z" stroke="#e11d48" stroke-width="2"/>
+                <path d="M4 7l8 6 8-6" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <b>info@unipop.lu</b>
+
+            <span class="ico" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2a10 10 0 1 0 10 10" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
+                <path d="M2 12h20" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 2c3 3 5 7 5 10s-2 7-5 10c-3-3-5-7-5-10S9 5 12 2Z" stroke="#e11d48" stroke-width="2" opacity=".9"/>
+              </svg>
+            </span>
+            <b>unipop.lu</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="footRight">
+        <div class="lbl">Prochaine session dans:</div>
+        <div class="nextLine">
+          <span id="nextLabel">—</span>
+          <span class="timer" id="timer">--h --m</span>
+        </div>
+      </div>
     </div>
   </div>
-</header>
 
-<main>
-  <section class="kpis">
-    <div class="kpi"><div class="t">Kurse heute (UniPop)</div><div class="v" id="kpiCourses">–</div></div>
-    <div class="kpi"><div class="t">Teilnehmende (gebucht)</div><div class="v" id="kpiBooked">–</div></div>
-    <div class="kpi"><div class="t">Plätze (gebucht/gesamt)</div><div class="v" id="kpiSlots">–</div></div>
-    <div class="kpi"><div class="t">Ø Auslastung</div><div class="v" id="kpiOcc">–</div></div>
-  </section>
+  <div class="dbg" id="dbg">dbg</div>
 
-  <section class="card">
-    <div class="tableHead">
-      <div id="lastRefresh">Letzter Refresh: –</div>
-      <div id="itemCount">Items: –</div>
-    </div>
+  <script>
+    /* =========================
+       CONFIG
+    ========================== */
+    const DATA_URL = "https://letzbug.github.io/magic/data/trainings.json";
+    const TZ = "Europe/Luxembourg";
 
-    <div class="scroll" id="scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Datum</th>
-            <th>Zeit</th>
-            <th>Kurs</th>
-            <th>Ort</th>
-            <th>Trainer</th>
-            <th>Belegung</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr><td colspan="6" class="muted">Noch keine Daten geladen…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-</main>
+    // optional: site filter like mock
+    // use URL param: ?site=Belval  (or Walfer / Kirchberg etc.)
+    const SITE_FILTER = (new URLSearchParams(location.search).get("site") || "Belval").trim();
 
-<div class="dbg" id="dbg">dbg</div>
+    // refresh behavior
+    const REFRESH_MS = 60_000;
 
-<script>
-  const DATA_URL = "data/trainings.json";   // ✅ WICHTIG: wie gestern!
-  const TZ = "Europe/Luxembourg";
+    // scroll behavior
+    const SCROLL_SPEED_PX_PER_SEC = 28;
+    const SCROLL_PAUSE_MS = 1400;
+    const MIN_ROWS_FOR_SCROLL = 7;
 
-  const el = (id)=>document.getElementById(id);
-  const tbody = el("tbody");
-  const dateLabel = el("dateLabel");
-  const srcLabel = el("srcLabel");
-  const lastRefresh = el("lastRefresh");
-  const itemCount = el("itemCount");
-  const dbg = el("dbg");
+    /* =========================
+       DOM
+    ========================== */
+    const $ = (id)=>document.getElementById(id);
+    const dayText = $("dayText");
+    const sitePill = $("sitePill");
+    const clockHM = $("clockHM");
+    const clockS = $("clockS");
 
-  const kpiCourses = el("kpiCourses");
-  const kpiBooked  = el("kpiBooked");
-  const kpiSlots   = el("kpiSlots");
-  const kpiOcc     = el("kpiOcc");
+    const kpiCourses = $("kpiCourses");
+    const kpiPeople = $("kpiPeople");
+    const kpiNow = $("kpiNow");
+    const kpiNext = $("kpiNext");
 
-  const clockTime = el("clockTime");
-  const clockSec  = el("clockSec");
+    const rows = $("rows");
+    const tbodyScroll = $("tbodyScroll");
 
-  const scrollBox = el("scroll");
+    const nextLabel = $("nextLabel");
+    const timer = $("timer");
 
-  let rawCourses = [];
-  let sessionsToday = [];
-  let scrollState = { running:false, dir:1, raf:0, lastTs:0, pauseUntil:0 };
+    const dbg = $("dbg");
 
-  function luxNow(){
-    return new Date(new Date().toLocaleString("en-US", { timeZone: TZ }));
-  }
-  function ymdLocal(d){
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const day = String(d.getDate()).padStart(2,"0");
-    return `${y}-${m}-${day}`;
-  }
-  function fmtDate(d){ return d.toLocaleDateString("de-DE", { timeZone: TZ }); }
-  function fmtTime(d){ return d.toLocaleTimeString("de-DE", { timeZone: TZ, hour:"2-digit", minute:"2-digit" }); }
+    let rawCourses = [];
+    let sessionsToday = [];
+    let scrollState = { running:false, dir:1, raf:0, lastTs:0, pauseUntil:0 };
 
-  function parseFRDateDDMMYYYY(s){
-    if(!s || typeof s !== "string") return null;
-    const m = s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if(!m) return null;
-    const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
-    const d = new Date(yyyy, mm-1, dd, 0,0,0,0);
-    return isNaN(d) ? null : d;
-  }
-  function parseTimeHHMM(s){
-    if(!s || typeof s !== "string") return null;
-    const m = s.trim().match(/^(\d{2}):(\d{2})$/);
-    if(!m) return null;
-    return { h: Number(m[1]), m: Number(m[2]) };
-  }
-  function parseDurationToMinutes(s){
-    if(!s) return null;
-    if(typeof s === "number") return s;
-    if(typeof s !== "string") return null;
-    const t = s.trim().toLowerCase();
-    const mh = t.match(/^(\d+)\s*h(?:\s*(\d+))?$/); // 1h40 / 2h
-    if(mh){
-      const h = Number(mh[1]);
-      const min = mh[2] ? Number(mh[2]) : 0;
-      return h*60 + min;
+    /* =========================
+       TIME / FORMAT
+    ========================== */
+    function luxNow(){
+      return new Date(new Date().toLocaleString("en-US", { timeZone: TZ }));
     }
-    const m2 = t.match(/^(\d+)\s*min$/);
-    if(m2) return Number(m2[1]);
-    const m3 = t.match(/^(\d+)$/);
-    if(m3) return Number(m3[1]);
-    return null;
-  }
-  const FR_DAY_TO_JS = {
-    "lundi": 1, "mardi": 2, "mercredi": 3, "jeudi": 4, "vendredi": 5, "samedi": 6, "dimanche": 0
-  };
-  function jsDayFromFR(fr){
-    if(!fr) return null;
-    const key = String(fr).trim().toLowerCase();
-    return (key in FR_DAY_TO_JS) ? FR_DAY_TO_JS[key] : null;
-  }
-  function makeDateTimeOnDay(dayDate, hhmm){
-    const d = new Date(dayDate);
-    d.setHours(hhmm.h, hhmm.m, 0, 0);
-    return d;
-  }
-  function overlaps(aStart, aEnd, bStart, bEnd){
-    return aStart < bEnd && aEnd > bStart;
-  }
-  function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[c]));
-  }
+    function fmtDayLong(d){
+      // "Mercredi 25 février 2026"
+      return d.toLocaleDateString("fr-FR", { timeZone: TZ, weekday:"long", day:"numeric", month:"long", year:"numeric" });
+    }
+    function fmtHM(d){
+      return d.toLocaleTimeString("fr-FR", { timeZone: TZ, hour:"2-digit", minute:"2-digit", hour12:false });
+    }
+    function fmtSec(d){
+      return d.toLocaleTimeString("fr-FR", { timeZone: TZ, second:"2-digit" });
+    }
+    function ymdLocal(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
 
-  function occPct(booked, capacity){
-    if(!(Number.isFinite(booked) && Number.isFinite(capacity) && capacity > 0)) return null;
-    return Math.max(0, Math.min(100, (booked / capacity) * 100));
-  }
-  function occDotClass(p){
-    if(p === null) return "dot";
-    if(p >= 80) return "dot ok";
-    if(p >= 50) return "dot warn";
-    return "dot bad";
-  }
+    /* =========================
+       PARSERS (same logic as your "yesterday" file)
+    ========================== */
+    function parseFRDateDDMMYYYY(s){
+      if(!s || typeof s !== "string") return null;
+      const m = s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if(!m) return null;
+      const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
+      const d = new Date(yyyy, mm-1, dd, 0,0,0,0);
+      return isNaN(d) ? null : d;
+    }
+    function parseTimeHHMM(s){
+      if(!s || typeof s !== "string") return null;
+      const m = s.trim().match(/^(\d{2}):(\d{2})$/);
+      if(!m) return null;
+      return { h: Number(m[1]), m: Number(m[2]) };
+    }
+    function parseDurationToMinutes(s){
+      if(!s) return null;
+      if(typeof s === "number") return s;
+      if(typeof s !== "string") return null;
+      const t = s.trim().toLowerCase();
 
-  function getItems(payload){
-    if(Array.isArray(payload)) return payload;
-    if(payload && typeof payload === "object"){
-      for(const k of ["items","data","trainings","results"]){
-        if(Array.isArray(payload[k])) return payload[k];
+      const mh = t.match(/^(\d+)\s*h(?:\s*(\d+))?$/); // 1h40 / 2h
+      if(mh){
+        const h = Number(mh[1]);
+        const min = mh[2] ? Number(mh[2]) : 0;
+        return h*60 + min;
       }
-      const vals = Object.values(payload);
-      if(vals.length && vals.slice(0, Math.min(vals.length,20)).every(v => v && typeof v === "object" && !Array.isArray(v))) return vals;
+      const m2 = t.match(/^(\d+)\s*min$/);
+      if(m2) return Number(m2[1]);
+      const m3 = t.match(/^(\d+)$/);
+      if(m3) return Number(m3[1]);
+      return null;
     }
-    return [];
-  }
+    const FR_DAY_TO_JS = {
+      "lundi": 1, "mardi": 2, "mercredi": 3, "jeudi": 4, "vendredi": 5, "samedi": 6, "dimanche": 0
+    };
+    function jsDayFromFR(fr){
+      if(!fr) return null;
+      const key = String(fr).trim().toLowerCase();
+      return (key in FR_DAY_TO_JS) ? FR_DAY_TO_JS[key] : null;
+    }
+    function makeDateTimeOnDay(dayDate, hhmm){
+      const d = new Date(dayDate);
+      d.setHours(hhmm.h, hhmm.m, 0, 0);
+      return d;
+    }
+    function overlaps(aStart, aEnd, bStart, bEnd){
+      return aStart < bEnd && aEnd > bStart;
+    }
 
-  function passesUniPop(c){
-    const orgCode = (c.organisateur && c.organisateur.code) ? String(c.organisateur.code) : "";
-    return orgCode === "UNIPOP";
-  }
-
-  function buildTodaySessions(){
-    const now = luxNow();
-    const todayYMD = ymdLocal(now);
-
-    const startRange = new Date(todayYMD + "T00:00:00");
-    const endRange   = new Date(todayYMD + "T23:59:59");
-
-    const out = [];
-
-    for(const c of rawCourses){
-      if(!c || typeof c !== "object") continue;
-      if(!passesUniPop(c)) continue;
-
-      const dStart = parseFRDateDDMMYYYY(c.dateDebut);
-      const dEnd = parseFRDateDDMMYYYY(c.dateFin);
-      if(!dStart || !dEnd) continue;
-
-      const dEndExclusive = new Date(dEnd.getTime() + 24*3600*1000);
-      if(!overlaps(dStart, dEndExclusive, startRange, endRange)) continue;
-
-      const title = c.intitule || "(sans intitulé)";
-      const location = (c.adresseCours && (c.adresseCours.nom || c.adresseCours.localite || "")) || "";
-      const trainer = Array.isArray(c.enseignants) && c.enseignants.length
-        ? c.enseignants.map(x => [x.prenom, x.nom].filter(Boolean).join(" ").trim()).filter(Boolean).join(", ")
-        : "";
-
-      const booked = Number.isFinite(Number(c.nbInscrits)) ? Number(c.nbInscrits) : null;
-      const capacity = Number.isFinite(Number(c.nbPlaces)) ? Number(c.nbPlaces) : null;
-
-      const horaires = Array.isArray(c.horaires) ? c.horaires : [];
-      if(!horaires.length) continue;
-
-      // nur heute berechnen
-      const day0 = new Date(startRange);
-      day0.setHours(0,0,0,0);
-      if(day0 < dStart || day0 > dEnd) continue;
-
-      const jsDay = day0.getDay();
-
-      for(const h of horaires){
-        const targetJsDay = jsDayFromFR(h.jour);
-        if(targetJsDay === null || targetJsDay !== jsDay) continue;
-
-        const hhmm = parseTimeHHMM(h.heure);
-        if(!hhmm) continue;
-
-        const durMin = parseDurationToMinutes(h.duree);
-        if(!durMin) continue;
-
-        const sdt = makeDateTimeOnDay(day0, hhmm);
-        const edt = new Date(sdt.getTime() + durMin*60000);
-
-        out.push({
-          courseId: c.coursCode || c.coursId || c.id || "",
-          title,
-          date: new Date(day0),
-          start: sdt,
-          end: edt,
-          location,
-          trainer,
-          booked,
-          capacity,
-        });
+    function getItems(payload){
+      if(Array.isArray(payload)) return payload;
+      if(payload && typeof payload === "object"){
+        for(const k of ["items","data","trainings","results"]){
+          if(Array.isArray(payload[k])) return payload[k];
+        }
+        const vals = Object.values(payload);
+        if(vals.length && vals.slice(0, Math.min(vals.length,20)).every(v => v && typeof v === "object" && !Array.isArray(v))) return vals;
       }
+      return [];
     }
 
-    sessionsToday = out.sort((a,b)=>a.start-b.start);
-    dateLabel.textContent = fmtDate(startRange);
-  }
-
-  function render(){
-    if(!sessionsToday.length){
-      tbody.innerHTML = `<tr><td colspan="6" class="muted">Keine UniPop-Kurse für heute gefunden.</td></tr>`;
-      return;
+    function passesUniPop(c){
+      const orgCode = (c.organisateur && c.organisateur.code) ? String(c.organisateur.code) : "";
+      return orgCode === "UNIPOP";
     }
 
-    tbody.innerHTML = sessionsToday.map(it => {
-      const d = fmtDate(it.start);
-      const t = `${fmtTime(it.start)}–${fmtTime(it.end)}`;
+    function shortLieuFromLocation(location){
+      const s = String(location || "").toLowerCase();
+      if(s.includes("belval")) return "Belval";
+      if(s.includes("walfer")) return "Walfer";
+      if(s.includes("kirchberg")) return "Kirchberg";
+      if(s.includes("esch")) return "Esch";
+      return location ? location.split(",")[0].trim().slice(0, 18) : "—";
+    }
 
-      const p = occPct(it.booked, it.capacity);
-      const occText = (p === null)
-        ? `<span class="muted">n/a</span>`
-        : `<span class="tag"><span class="${occDotClass(p)}"></span>${Math.round(p)}%</span>
-           <div class="muted" style="margin-top:6px;font-size:12px;">${it.booked}/${it.capacity}</div>`;
+    function buildTodaySessions(){
+      const now = luxNow();
+      const todayYMD = ymdLocal(now);
 
-      const idInline = it.courseId
-        ? `<span class="courseid">${escapeHtml(it.courseId)}</span>`
-        : ``;
+      const startRange = new Date(todayYMD + "T00:00:00");
+      const endRange   = new Date(todayYMD + "T23:59:59");
 
-      return `<tr>
-        <td>${d}</td>
-        <td class="mono">${t}</td>
-        <td>
-          <div class="courseLine">
-            <span class="courseTitle">${escapeHtml(it.title)}</span>
-            ${idInline}
-          </div>
-        </td>
-        <td>${escapeHtml(it.location || "")}</td>
-        <td>${escapeHtml(it.trainer || "")}</td>
-        <td>${occText}</td>
-      </tr>`;
-    }).join("");
+      dayText.textContent = fmtDayLong(startRange);
+      sitePill.textContent = SITE_FILTER || "—";
 
-    // KPIs
-    const courses = sessionsToday.length;
-    let bookedSum = 0, capSum = 0, occSum = 0, occCount = 0;
+      const out = [];
 
-    for(const it of sessionsToday){
-      const p = occPct(it.booked, it.capacity);
-      if(p !== null){
-        bookedSum += it.booked;
-        capSum += it.capacity;
-        occSum += p;
-        occCount += 1;
+      for(const c of rawCourses){
+        if(!c || typeof c !== "object") continue;
+        if(!passesUniPop(c)) continue;
+
+        const dStart = parseFRDateDDMMYYYY(c.dateDebut);
+        const dEnd = parseFRDateDDMMYYYY(c.dateFin);
+        if(!dStart || !dEnd) continue;
+
+        const dEndExclusive = new Date(dEnd.getTime() + 24*3600*1000);
+        if(!overlaps(dStart, dEndExclusive, startRange, endRange)) continue;
+
+        const title = c.intitule || "(sans intitulé)";
+        const locationFull = (c.adresseCours && (c.adresseCours.nom || c.adresseCours.localite || "")) || "";
+        const lieuShort = shortLieuFromLocation(locationFull);
+
+        // optional filter by site
+        if(SITE_FILTER && !lieuShort.toLowerCase().includes(SITE_FILTER.toLowerCase())){
+          continue;
+        }
+
+        const trainer = Array.isArray(c.enseignants) && c.enseignants.length
+          ? c.enseignants.map(x => [x.prenom, x.nom].filter(Boolean).join(" ").trim()).filter(Boolean).join(", ")
+          : "";
+
+        const booked = Number.isFinite(Number(c.nbInscrits)) ? Number(c.nbInscrits) : null;
+        const capacity = Number.isFinite(Number(c.nbPlaces)) ? Number(c.nbPlaces) : null;
+
+        const horaires = Array.isArray(c.horaires) ? c.horaires : [];
+        if(!horaires.length) continue;
+
+        const day0 = new Date(startRange);
+        day0.setHours(0,0,0,0);
+        if(day0 < dStart || day0 > dEnd) continue;
+
+        const jsDay = day0.getDay();
+
+        for(const h of horaires){
+          const targetJsDay = jsDayFromFR(h.jour);
+          if(targetJsDay === null || targetJsDay !== jsDay) continue;
+
+          const hhmm = parseTimeHHMM(h.heure);
+          if(!hhmm) continue;
+
+          const durMin = parseDurationToMinutes(h.duree);
+          if(!durMin) continue;
+
+          const sdt = makeDateTimeOnDay(day0, hhmm);
+          const edt = new Date(sdt.getTime() + durMin*60000);
+
+          // salle can be in horaires or in course payload (unknown -> fallback "—")
+          const salle = (h.salle || h.salleCode || c.salle || c.salleCode || c.salleNom || "—");
+
+          out.push({
+            title,
+            id: c.id || "",
+            code: c.coursCode || c.coursId || c.id || "",
+            start: sdt,
+            end: edt,
+            lieu: lieuShort || "—",
+            salle: salle || "—",
+            booked,
+            capacity,
+            trainer
+          });
+        }
       }
+
+      sessionsToday = out.sort((a,b)=>a.start-b.start);
     }
 
-    kpiCourses.textContent = String(courses);
-    kpiBooked.textContent  = occCount ? String(bookedSum) : "–";
-    kpiSlots.textContent   = occCount ? `${bookedSum}/${capSum}` : "–";
-    kpiOcc.textContent     = occCount ? `${Math.round(occSum/occCount)}%` : "–";
-  }
+    /* =========================
+       STATUS + COLORS
+    ========================== */
+    function occPct(booked, cap){
+      if(!(Number.isFinite(booked) && Number.isFinite(cap) && cap>0)) return null;
+      return Math.max(0, Math.min(100, (booked/cap)*100));
+    }
 
-  // auto-scroll (wenn zu viele Zeilen)
-  function stopAutoScroll(){
-    scrollState.running = false;
-    cancelAnimationFrame(scrollState.raf);
-    scrollState.raf = 0;
-    scrollState.lastTs = 0;
-    scrollState.pauseUntil = 0;
-    scrollBox.scrollTop = 0;
-  }
-  function setupAutoScroll(){
-    stopAutoScroll();
+    function computeStatus(s, now){
+      const booked = Number.isFinite(s.booked) ? s.booked : null;
+      const cap = Number.isFinite(s.capacity) ? s.capacity : null;
 
-    // kann nur scrollen, wenn Inhalte höher als Box
-    const canScroll = scrollBox.scrollHeight > scrollBox.clientHeight + 4;
-    if(!canScroll || sessionsToday.length < 7) return;
+      const isFull = (booked !== null && cap !== null && cap>0 && booked >= cap);
+      const isNow = now >= s.start && now < s.end;
+      const isFuture = now < s.start;
 
-    const SPEED = 28;      // px/sec
-    const PAUSE = 1400;    // ms
+      if(isFull) return { key:"COMPLET", cls:"st-complet", dot:"bad" };
+      if(isNow) return { key:"EN COURS", cls:"st-encours", dot:"ok" };
+      if(isFuture){
+        // if capacity known and not full -> places disponibles, else à venir
+        if(booked !== null && cap !== null && cap>0 && booked < cap){
+          return { key:"PLACES DISPONIBLES", cls:"st-dispo", dot:"ok" };
+        }
+        return { key:"À VENIR", cls:"st-avenir", dot:"info" };
+      }
+      // past: keep as À VENIR style but muted (not asked in mock; we keep À VENIR)
+      return { key:"À VENIR", cls:"st-avenir", dot:"info" };
+    }
 
-    scrollState.running = true;
-    scrollState.dir = 1;
-    scrollState.pauseUntil = performance.now() + PAUSE;
+    function barColorForStatus(statusKey){
+      // mimic mock colorful bars
+      if(statusKey === "EN COURS") return "linear-gradient(90deg, #ff2c6d, #ff5a85)";
+      if(statusKey === "COMPLET") return "linear-gradient(90deg, #ff2c6d, #ff2c6d)";
+      if(statusKey === "PLACES DISPONIBLES") return "linear-gradient(90deg, #1ee6a8, #62ffcc)";
+      if(statusKey === "À VENIR") return "linear-gradient(90deg, #2c6bff, #6aa9ff)";
+      return "linear-gradient(90deg, #6aa9ff, #6aa9ff)";
+    }
 
-    const step = (ts)=>{
-      if(!scrollState.running) return;
+    /* =========================
+       RENDER
+    ========================== */
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
 
-      if(!scrollState.lastTs) scrollState.lastTs = ts;
-      const dt = (ts - scrollState.lastTs)/1000;
-      scrollState.lastTs = ts;
+    function renderTable(){
+      const now = luxNow();
 
-      if(ts < scrollState.pauseUntil){
-        scrollState.raf = requestAnimationFrame(step);
+      if(!sessionsToday.length){
+        rows.innerHTML = `<tr><td colspan="7" style="color:rgba(255,255,255,.75);padding:22px 16px;">
+          Aucun cours UniPop trouvé pour aujourd’hui (filtre: ${escapeHtml(SITE_FILTER)}).
+        </td></tr>`;
         return;
       }
 
-      const max = scrollBox.scrollHeight - scrollBox.clientHeight;
-      scrollBox.scrollTop = Math.max(0, Math.min(max, scrollBox.scrollTop + SPEED*dt*scrollState.dir));
+      rows.innerHTML = sessionsToday.map(s=>{
+        const hm = `${fmtHM(s.start)} – ${fmtHM(s.end)}`;
+        const st = computeStatus(s, now);
 
-      if(scrollBox.scrollTop <= 0 && scrollState.dir < 0){
-        scrollState.dir = 1;
-        scrollState.pauseUntil = ts + PAUSE;
-      }else if(scrollBox.scrollTop >= max - 1 && scrollState.dir > 0){
-        scrollState.dir = -1;
-        scrollState.pauseUntil = ts + PAUSE;
+        const booked = Number.isFinite(s.booked) ? s.booked : 0;
+        const cap = Number.isFinite(s.capacity) ? s.capacity : 0;
+
+        const pct = occPct(s.booked, s.capacity);
+        const pctW = (pct === null) ? 0 : pct;
+
+        const barFill = barColorForStatus(st.key);
+
+        return `
+          <tr>
+            <td class="c-heure">
+              <span class="heurePill">${escapeHtml(hm)}</span>
+            </td>
+            <td class="c-cours">${escapeHtml(s.title)}</td>
+            <td class="c-id">${escapeHtml(String(s.code || s.id || "—"))}</td>
+            <td class="c-insc">
+              <div class="inscWrap">
+                <div class="inscText">${escapeHtml(`${booked} / ${cap || "—"}`)}</div>
+                <div class="bar" aria-hidden="true">
+                  <i style="width:${pctW}%; background:${barFill};"></i>
+                </div>
+              </div>
+            </td>
+            <td class="c-lieu">${escapeHtml(s.lieu || "—")}</td>
+            <td class="c-salle">${escapeHtml(s.salle || "—")}</td>
+            <td class="c-statut">
+              <span class="status ${st.cls}">
+                <span class="dot"></span>
+                ${escapeHtml(st.key)}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function computeKPIs(){
+      const now = luxNow();
+      const totalCourses = sessionsToday.length;
+
+      // participants = sum booked where available
+      let participants = 0;
+      for(const s of sessionsToday){
+        if(Number.isFinite(s.booked)) participants += s.booked;
       }
 
+      // now running count
+      const running = sessionsToday.filter(s => now >= s.start && now < s.end).length;
+
+      // next start time
+      const next = sessionsToday.find(s => now < s.start) || null;
+      const nextHM = next ? fmtHM(next.start) : "—";
+
+      kpiCourses.textContent = String(totalCourses);
+      kpiPeople.textContent = String(participants);
+      kpiNow.textContent = String(running);
+      kpiNext.textContent = nextHM;
+
+      // footer "next session in"
+      if(next){
+        nextLabel.textContent = `${fmtHM(next.start)} • ${next.title}`;
+      }else{
+        nextLabel.textContent = "—";
+      }
+      updateCountdown(next);
+    }
+
+    function updateCountdown(next){
+      if(!next){
+        timer.textContent = "--h --m";
+        return;
+      }
+      const now = luxNow();
+      let diffMs = next.start - now;
+      if(diffMs < 0) diffMs = 0;
+
+      const totalMin = Math.floor(diffMs / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+
+      timer.textContent = `${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m`;
+    }
+
+    /* =========================
+       AUTO SCROLL
+    ========================== */
+    function stopAutoScroll(){
+      scrollState.running = false;
+      cancelAnimationFrame(scrollState.raf);
+      scrollState.raf = 0;
+      scrollState.lastTs = 0;
+      scrollState.pauseUntil = 0;
+      tbodyScroll.scrollTop = 0;
+    }
+
+    function setupAutoScroll(){
+      stopAutoScroll();
+      const canScroll = tbodyScroll.scrollHeight > tbodyScroll.clientHeight + 4;
+      if(!canScroll || sessionsToday.length < MIN_ROWS_FOR_SCROLL) return;
+
+      scrollState.running = true;
+      scrollState.dir = 1;
+      scrollState.pauseUntil = performance.now() + SCROLL_PAUSE_MS;
+
+      const step = (ts)=>{
+        if(!scrollState.running) return;
+
+        if(!scrollState.lastTs) scrollState.lastTs = ts;
+        const dt = (ts - scrollState.lastTs)/1000;
+        scrollState.lastTs = ts;
+
+        if(ts < scrollState.pauseUntil){
+          scrollState.raf = requestAnimationFrame(step);
+          return;
+        }
+
+        const max = tbodyScroll.scrollHeight - tbodyScroll.clientHeight;
+        const delta = SCROLL_SPEED_PX_PER_SEC * dt * scrollState.dir;
+        tbodyScroll.scrollTop = Math.max(0, Math.min(max, tbodyScroll.scrollTop + delta));
+
+        if(tbodyScroll.scrollTop <= 0 && scrollState.dir < 0){
+          scrollState.dir = 1;
+          scrollState.pauseUntil = ts + SCROLL_PAUSE_MS;
+        } else if(tbodyScroll.scrollTop >= max - 1 && scrollState.dir > 0){
+          scrollState.dir = -1;
+          scrollState.pauseUntil = ts + SCROLL_PAUSE_MS;
+        }
+
+        scrollState.raf = requestAnimationFrame(step);
+      };
       scrollState.raf = requestAnimationFrame(step);
-    };
-    scrollState.raf = requestAnimationFrame(step);
-  }
+    }
 
-  async function load(){
-    srcLabel.textContent = DATA_URL;
-    const res = await fetch(DATA_URL + `?v=${Date.now()}`, { cache:"no-store" });
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const payload = await res.json();
-    rawCourses = getItems(payload);
+    /* =========================
+       LOAD
+    ========================== */
+    async function loadData(){
+      const res = await fetch(DATA_URL + "?v=" + Date.now(), { cache:"no-store" });
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      const payload = await res.json();
+      rawCourses = getItems(payload);
+      buildTodaySessions();
+      renderTable();
+      computeKPIs();
+      setupAutoScroll();
 
-    itemCount.textContent = "Items: " + rawCourses.length;
-    lastRefresh.textContent = "Letzter Refresh: " + new Date().toLocaleString("de-DE");
+      // dbg.textContent = `OK • raw:${rawCourses.length} • today:${sessionsToday.length} • site:${SITE_FILTER}`;
+      // dbg.style.display = "block";
+    }
 
-    buildTodaySessions();
-    render();
-    setupAutoScroll();
-  }
+    function tickClock(){
+      const n = luxNow();
+      clockHM.textContent = n.toLocaleTimeString("fr-FR", { timeZone: TZ, hour:"2-digit", minute:"2-digit", hour12:false });
+      clockS.textContent  = n.toLocaleTimeString("fr-FR", { timeZone: TZ, second:"2-digit" });
+    }
 
-  function tickClock(){
-    const n = luxNow();
-    clockTime.textContent = n.toLocaleTimeString("de-DE", { timeZone: TZ, hour:"2-digit", minute:"2-digit" });
-    clockSec.textContent  = n.toLocaleTimeString("de-DE", { timeZone: TZ, second:"2-digit" });
-  }
+    /* =========================
+       BOOT
+    ========================== */
+    tickClock();
+    setInterval(tickClock, 250);
 
-  // boot
-  tickClock(); setInterval(tickClock, 250);
-  load().catch(err => {
-    tbody.innerHTML = `<tr><td colspan="6" class="muted">Fehler beim Laden: ${escapeHtml(err.message)}</td></tr>`;
-  });
-  setInterval(()=> load().catch(()=>{}), 60_000);
-</script>
+    loadData().catch(err=>{
+      rows.innerHTML = `<tr><td colspan="7" style="color:rgba(255,255,255,.75);padding:22px 16px;">
+        Erreur de chargement: ${escapeHtml(err.message)}
+      </td></tr>`;
+    });
+
+    setInterval(()=> loadData().catch(()=>{}), REFRESH_MS);
+
+    setInterval(()=>{
+      // keep KPIs + status live without reloading
+      if(sessionsToday.length){
+        renderTable();
+        computeKPIs();
+      }
+    }, 30_000);
+  </script>
 </body>
 </html>
