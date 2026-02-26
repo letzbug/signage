@@ -283,21 +283,26 @@
 
     .c-heure{ width: 180px; }
     .c-cours{ width: 360px; }
-    .c-id{ width: 110px; }
-    .c-insc{ width: 280px; }
+    .c-id{ width: 140px; }
+    .c-insc{ width: 320px; }
     .c-lieu{ width: 170px; }
     .c-salle{ width: 150px; }
-    .c-statut{ width: 210px; }
+    .c-statut{ width: 220px; }
 
     .theadIcon{
       display:inline-flex; align-items:center; gap:10px;
     }
     .theadIcon svg{ opacity:.95 }
 
+    /* ✅ WICHTIG: muss scrollen können */
     .tbodyScroll{
       flex:1;
-      overflow:hidden;
+      overflow-y: auto;     /* <-- vorher hidden */
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      scrollbar-width: none; /* Firefox */
     }
+    .tbodyScroll::-webkit-scrollbar{ width:0; height:0; } /* Chrome/Edge */
 
     .heurePill{
       display:inline-flex;
@@ -317,7 +322,7 @@
       gap: 14px;
     }
     .inscText{
-      width: 78px;
+      width: 92px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-weight: 900;
       opacity:.95;
@@ -426,23 +431,29 @@
       transform: translateY(2px);
     }
 
+    /* ✅ FOOTER MID: zentriert + größer */
     .footMid{
       justify-content:center;
-      gap: 28px;
+      gap: 18px;
+      text-align:center;
     }
+    .footMid > div{ width:100%; }
     .footMid .midTitle{
       font-weight: 950;
-      letter-spacing: .8px;
+      letter-spacing: 1.2px;
+      font-size: 36px;          /* doppelt so groß */
+      text-transform: none;
     }
     .midRow{
       display:flex;
       align-items:center;
-      gap: 16px;
+      justify-content:center;   /* zentriert */
+      gap: 22px;
       flex-wrap:wrap;
       font-weight: 850;
       color: rgba(0,0,0,.72);
       margin-top: 10px;
-      font-size: 18px;
+      font-size: 20px;
     }
     .midRow b{ color:#0b1220; }
     .ico{
@@ -492,21 +503,8 @@
       box-shadow: 0 14px 40px rgba(0,0,0,.22);
     }
 
-    /* Debug badge */
-    .dbg{
-      position: fixed;
-      left: 16px;
-      bottom: 16px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.35);
-      color: rgba(255,255,255,.90);
-      font: 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      backdrop-filter: blur(10px);
-      display:block;
-      z-index: 20;
-    }
+    /* ✅ Debug komplett aus */
+    .dbg{ display:none !important; }
   </style>
 </head>
 
@@ -733,14 +731,15 @@
     const DATA_URL = "https://letzbug.github.io/franks_magic/data/trainings.json";
     const TZ = "Europe/Luxembourg";
 
-    // OPTIONAL: filter by site via URL ?site=Belval
-    // Default "" => all sites
     const SITE_FILTER = (new URLSearchParams(location.search).get("site") || "").trim();
 
     const REFRESH_MS = 60_000;
-    const SCROLL_SPEED_PX_PER_SEC = 28;
-    const SCROLL_PAUSE_MS = 1400;
-    const MIN_ROWS_FOR_SCROLL = 7;
+
+    // “Signage”-Scroll: runter -> pause -> smooth nach oben -> pause -> repeat
+    const SCROLL_STEP_PX = 1;           // fein = smooth
+    const SCROLL_TICK_MS = 18;          // ~55fps
+    const SCROLL_PAUSE_MS = 1200;       // pause oben/unten
+    const SCROLL_START_DELAY_MS = 800;  // nach Render warten
 
     /* =========================
        DOM
@@ -766,7 +765,10 @@
 
     let rawCourses = [];
     let sessionsToday = [];
-    let scrollState = { running:false, dir:1, raf:0, lastTs:0, pauseUntil:0 };
+
+    let scrollTimer = null;
+    let scrollDir = 1;
+    let scrollPausedUntil = 0;
 
     /* =========================
        TIME / FORMAT
@@ -852,17 +854,11 @@
     }
 
     function passesUniPop(c){
-      // 1) organisateur.code
       const orgCode = (c.organisateur && c.organisateur.code) ? String(c.organisateur.code).trim().toUpperCase() : "";
       if(orgCode) return orgCode === "UNIPOP";
-
-      // 2) your export sometimes has this field (seen in your screenshot)
       if(c.categorieCodeUnipop) return true;
-
-      // 3) fallback: adresseCours.nom contains "Université Populaire"
       const addrName = (c.adresseCours && (c.adresseCours.nom || "")) ? String(c.adresseCours.nom).toLowerCase() : "";
       if(addrName.includes("universit") && addrName.includes("populaire")) return true;
-
       return false;
     }
 
@@ -906,10 +902,6 @@
           continue;
         }
 
-        const trainer = Array.isArray(c.enseignants) && c.enseignants.length
-          ? c.enseignants.map(x => [x.prenom, x.nom].filter(Boolean).join(" ").trim()).filter(Boolean).join(", ")
-          : "";
-
         const booked = Number.isFinite(Number(c.nbInscrits)) ? Number(c.nbInscrits) : null;
         const capacity = Number.isFinite(Number(c.nbPlaces)) ? Number(c.nbPlaces) : null;
 
@@ -946,8 +938,7 @@
             lieu: lieuShort || "—",
             salle: salle || "—",
             booked,
-            capacity,
-            trainer
+            capacity
           });
         }
       }
@@ -990,9 +981,6 @@
       return "linear-gradient(90deg, #6aa9ff, #6aa9ff)";
     }
 
-    /* =========================
-       RENDER
-    ========================== */
     function escapeHtml(s){
       return String(s ?? "").replace(/[&<>"']/g, c => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -1090,53 +1078,49 @@
     }
 
     /* =========================
-       AUTO SCROLL
+       SIGNAGE AUTO SCROLL (cool loop)
     ========================== */
     function stopAutoScroll(){
-      scrollState.running = false;
-      cancelAnimationFrame(scrollState.raf);
-      scrollState.raf = 0;
-      scrollState.lastTs = 0;
-      scrollState.pauseUntil = 0;
-      tbodyScroll.scrollTop = 0;
+      if(scrollTimer) clearInterval(scrollTimer);
+      scrollTimer = null;
+      scrollDir = 1;
+      scrollPausedUntil = 0;
     }
 
-    function setupAutoScroll(){
+    function startAutoScroll(){
       stopAutoScroll();
-      const canScroll = tbodyScroll.scrollHeight > tbodyScroll.clientHeight + 4;
-      if(!canScroll || sessionsToday.length < MIN_ROWS_FOR_SCROLL) return;
 
-      scrollState.running = true;
-      scrollState.dir = 1;
-      scrollState.pauseUntil = performance.now() + SCROLL_PAUSE_MS;
+      // nur wenn wirklich mehr Inhalt als sichtbar
+      const max = tbodyScroll.scrollHeight - tbodyScroll.clientHeight;
+      if(max <= 4) return;
 
-      const step = (ts)=>{
-        if(!scrollState.running) return;
+      // Start oben
+      tbodyScroll.scrollTop = 0;
+      scrollDir = 1;
+      scrollPausedUntil = Date.now() + SCROLL_PAUSE_MS;
 
-        if(!scrollState.lastTs) scrollState.lastTs = ts;
-        const dt = (ts - scrollState.lastTs)/1000;
-        scrollState.lastTs = ts;
+      scrollTimer = setInterval(() => {
+        const now = Date.now();
+        const max2 = tbodyScroll.scrollHeight - tbodyScroll.clientHeight;
+        if(max2 <= 4) return;
 
-        if(ts < scrollState.pauseUntil){
-          scrollState.raf = requestAnimationFrame(step);
-          return;
+        if(now < scrollPausedUntil) return;
+
+        // bewegen
+        tbodyScroll.scrollTop += SCROLL_STEP_PX * scrollDir;
+
+        // unten erreicht
+        if(tbodyScroll.scrollTop >= max2 - 1 && scrollDir > 0){
+          scrollDir = -1;
+          scrollPausedUntil = now + SCROLL_PAUSE_MS;
         }
 
-        const max = tbodyScroll.scrollHeight - tbodyScroll.clientHeight;
-        const delta = SCROLL_SPEED_PX_PER_SEC * dt * scrollState.dir;
-        tbodyScroll.scrollTop = Math.max(0, Math.min(max, tbodyScroll.scrollTop + delta));
-
-        if(tbodyScroll.scrollTop <= 0 && scrollState.dir < 0){
-          scrollState.dir = 1;
-          scrollState.pauseUntil = ts + SCROLL_PAUSE_MS;
-        } else if(tbodyScroll.scrollTop >= max - 1 && scrollState.dir > 0){
-          scrollState.dir = -1;
-          scrollState.pauseUntil = ts + SCROLL_PAUSE_MS;
+        // oben erreicht
+        if(tbodyScroll.scrollTop <= 0 && scrollDir < 0){
+          scrollDir = 1;
+          scrollPausedUntil = now + SCROLL_PAUSE_MS;
         }
-
-        scrollState.raf = requestAnimationFrame(step);
-      };
-      scrollState.raf = requestAnimationFrame(step);
+      }, SCROLL_TICK_MS);
     }
 
     /* =========================
@@ -1152,7 +1136,9 @@
       buildTodaySessions();
       renderTable();
       computeKPIs();
-      setupAutoScroll();
+
+      // nach Render kurz warten, dann Scroll starten (damit scrollHeight stimmt)
+      setTimeout(() => startAutoScroll(), SCROLL_START_DELAY_MS);
 
       dbg.textContent = `OK • raw:${rawCourses.length} • today:${sessionsToday.length} • site:${SITE_FILTER||"ALL"} • url:${DATA_URL}`;
     }
